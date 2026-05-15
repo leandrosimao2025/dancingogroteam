@@ -4,202 +4,307 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ogro Team - Sistema de Gestão</title>
-    <!-- Tailwind CSS para Estilização Rápida e Premium -->
-    <script src="https://tailwindcss.com"></script>
-    <!-- Ícones Lucide para os Cards e Menus -->
-    <script src="https://unpkg.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#060913] text-gray-100 font-sans antialiased min-h-screen">
+<body>
+    <div class="app-container">
 
-    <!-- CONTAINER GLOBAL DO APLICATIVO -->
-    <div id="app-container" class="max-w-md mx-auto min-h-screen flex flex-col relative pb-20 shadow-2xl bg-[#0b0f19]">
-        
-        <!-- PÁGINA 1: TELA DE LOGIN -->
-        <section id="page-1" class="page-view p-6 flex flex-col justify-center flex-grow">
-            <div class="text-center mb-8">
-                <div class="w-24 h-24 bg-[#dc2626] rounded-full mx-auto flex items-center justify-center mb-3 shadow-lg border border-red-500">
-                    <span class="text-xl font-black text-white tracking-wider">OGRO</span>
-                </div>
-                <h1 class="text-2xl font-bold tracking-tight text-white">OGRO TEAM</h1>
-                <p class="text-xs text-gray-400 mt-1">Acesso Unificado ao Sistema</p>
+        <!-- PÁGINA 1: LOGIN -->
+        <div id="p1" class="page active">
+            <div class="brand-header">
+                <img src="https://githubusercontent.com" alt="Ogro Team Logo" class="logo-oficial" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='inline-flex'">
+                <div id="logo-fallback" class="logo-placeholder" style="display:none;">👹</div>
+                <h2>OGRO TEAM</h2>
+                <p class="subtitle">Acesso Unificado ao Sistema</p>
             </div>
-            <form id="login-form" class="space-y-4" onsubmit="event.preventDefault(); handleLogin();">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">E-mail ou WhatsApp</label>
-                    <input type="text" id="login-user" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626] transition-colors" placeholder="user@ogroteam.com">
+            <div class="form-group">
+                <label>E-mail ou WhatsApp</label>
+                <input type="text" id="login-email" placeholder="Digite seu acesso">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <div class="password-wrapper">
+                    <input type="password" id="login-senha" placeholder="••••••••">
+                    <span class="password-toggle" onclick="alternarSenha()">👁️</span>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Senha</label>
-                    <div class="relative">
-                        <input type="password" id="login-pass" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626] transition-colors" placeholder="••••••••">
-                        <button type="button" onclick="togglePasswordVisibility('login-pass')" class="absolute right-3 top-3.5 text-gray-400 hover:text-white">👁️</button>
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm uppercase tracking-wider mt-2 shadow-md">Entrar</button>
-                <div class="text-center mt-4">
-                    <button type="button" onclick="navigateTo('page-2')" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">Esqueceu a Senha?</button>
-                </div>
-            </form>
-        </section>
+            </div>
+            <button class="btn btn-primary" onclick="executarLogin()">Entrar</button>
+            <span class="text-link" onclick="navegarPara(2)">Esqueceu a Senha?</span>
+        </div>
 
         <!-- PÁGINA 2: RECUPERAÇÃO DE SENHA -->
-        <section id="page-2" class="page-view p-6 hidden flex-col justify-center flex-grow">
-            <h2 class="text-xl font-bold text-white mb-2">Recuperar Acesso</h2>
-            <p class="text-xs text-gray-400 mb-6">Altere suas credenciais de acesso em tempo real.</p>
-            <form class="space-y-4" onsubmit="event.preventDefault(); handlePasswordRecovery();">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">E-mail ou WhatsApp Cadastrado</label>
-                    <input type="text" id="recover-user" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626]">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Nova Senha</label>
-                    <input type="password" id="recover-new-pass" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626]">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Confirmar Nova Senha</label>
-                    <input type="password" id="recover-confirm-pass" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626]">
-                </div>
-                <button type="submit" class="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm uppercase tracking-wider">Atualizar Senha</button>
-                <button type="button" onclick="navigateTo('page-1')" class="w-full bg-transparent border border-gray-700 text-gray-400 py-2 rounded-lg text-xs mt-2">Voltar ao Login</button>
-            </form>
-        </section>
+        <div id="p2" class="page">
+            <h2>Recuperação de Senha</h2>
+            <p class="subtitle">Atualização imediata de credenciais</p>
+            <div class="form-group">
+                <label>E-mail ou WhatsApp Cadastrado</label>
+                <input type="text" id="recup-usuario" placeholder="Insira seus dados">
+            </div>
+            <div class="form-group">
+                <label>Nova Senha</label>
+                <input type="password" id="recup-nova" placeholder="Nova Senha">
+            </div>
+            <button class="btn btn-primary" onclick="atualizarSenhaReal()">Atualizar Senha em Tempo Real</button>
+            <span class="text-link" onclick="navegarPara(1)">← Voltar para o Login</span>
+        </div>
 
         <!-- PÁGINA 3: PAINEL CENTRAL DE GESTÃO -->
-        <section id="page-3" class="page-view p-5 hidden flex-col flex-grow">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <span id="user-badge" class="text-[10px] bg-red-900/50 border border-red-700 text-red-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Mestre</span>
-                    <h2 class="text-lg font-bold text-white mt-1">Painel Administrativo</h2>
+        <div id="p3" class="page">
+            <h2>Painel de Gestão</h2>
+            <p class="subtitle">Controle Operacional e Administrativo</p>
+            
+            <div class="grid-menu">
+                <div class="card-premium" onclick="navegarPara(4)">
+                    <div class="card-icon icon-azul">👤</div>
+                    <div class="card-title">Incluir Aluno</div>
+                    <div class="card-subtext">Cadastro Premium</div>
                 </div>
-                <button onclick="logout()" class="text-xs text-gray-500 hover:text-red-400">Sair</button>
-            </div>
-            <!-- Grid de Cards Premium (Adaptado para mobile) -->
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div onclick="navigateTo('page-4')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-blue-500 cursor-pointer transition-all shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-blue-900/30 flex items-center justify-center text-blue-400 mb-2"><i data-lucide="user-plus"></i></div>
-                    <h3 class="text-sm font-bold text-white">Incluir Aluno</h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Cadastro Premium</p>
+                <div class="card-premium" onclick="navegarPara(5)">
+                    <div class="card-icon icon-cinza">🏛️</div>
+                    <div class="card-title">Incluir CT</div>
+                    <div class="card-subtext">Gerencie filiais</div>
                 </div>
-                <div onclick="navigateTo('page-5')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-gray-500 cursor-pointer transition-all shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-gray-300 mb-2"><i data-lucide="building"></i></div>
-                    <h3 class="text-sm font-bold text-white">Incluir Unidades</h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Gerencie filiais</p>
+                <div class="card-premium" onclick="navegarPara(6)">
+                    <div class="card-icon icon-vermelho">📈</div>
+                    <div class="card-title">Dashboard</div>
+                    <div class="card-subtext">Resultados e metas</div>
                 </div>
-                <div onclick="checkPermissionAndNavigate('page-6')" id="card-metrics" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-red-500 cursor-pointer transition-all shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center text-red-400 mb-2"><i data-lucide="trending-up"></i></div>
-                    <h3 class="text-sm font-bold text-white">Dashboard</h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Resultados e metas</p>
+                <div class="card-premium" onclick="navegarPara(7)">
+                    <div class="card-icon icon-azul">👥</div>
+                    <div class="card-title">Equipe</div>
+                    <div class="card-subtext">Controle acessos</div>
                 </div>
-                <div onclick="checkPermissionAndNavigate('page-7')" id="card-team" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-blue-400 cursor-pointer transition-all shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-blue-900/20 flex items-center justify-center text-blue-300 mb-2"><i data-lucide="users"></i></div>
-                    <h3 class="text-sm font-bold text-white">Equipe</h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Controle de acessos</p>
+                <div class="card-premium" onclick="navegarPara(8)">
+                    <div class="card-icon icon-verde">⏱️</div>
+                    <div class="card-title">Presença</div>
+                    <div class="card-subtext">Chamada e Histórico</div>
                 </div>
-                <div onclick="navigateTo('page-8')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-green-500 cursor-pointer transition-all shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-green-900/30 flex items-center justify-center text-green-400 mb-2"><i data-lucide="calendar-check"></i></div>
-                    <h3 class="text-sm font-bold text-white">Frequência</h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Chamada e Histórico</p>
+                <div class="card-premium" onclick="navegarPara(11)">
+                    <div class="card-icon icon-roxo">📊</div>
+                    <div class="card-title">Relatórios</div>
+                    <div class="card-subtext">Exportar filtros</div>
                 </div>
-                <div onclick="navigateTo('page-11')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-purple-500 cursor-pointer transition-all shadow-md">
-                    <div class="w-8 h-8 rounded-lg bg-purple-900/30 flex items-center justify-center text-purple-400 mb-2"><i data-lucide="file-text"></i></div>
-                    <h3 class="text-sm font-bold text-white">Relatórios</h3>
-                    <p class="text-[10px] text-gray-400 mt-0.5">Exportar filtros</p>
-                </div>
-                <div onclick="checkPermissionAndNavigate('page-13')" id="card-config" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-yellow-500 cursor-pointer transition-all shadow-md col-span-2">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-yellow-900/30 flex items-center justify-center text-yellow-400"><i data-lucide="settings"></i></div>
-                        <div>
-                            <h3 class="text-sm font-bold text-white">Tabela de Preços & Logs</h3>
-                            <p class="text-[10px] text-gray-400">Valores por perfil e auditoria</p>
-                        </div>
-                    </div>
+                <div id="card-config" class="card-premium" onclick="navegarPara(13)">
+                    <div class="card-icon icon-amarelo">⚙️</div>
+                    <div class="card-title">Configurações</div>
+                    <div class="card-subtext">Preços e Auditoria</div>
                 </div>
             </div>
-        </section>
+            <button class="btn btn-accent" onclick="desconectarConta()" style="margin-top:20px;">Sair do Sistema</button>
+        </div>
 
         <!-- PÁGINA 4: CADASTRO PREMIUM DE ALUNO -->
-        <section id="page-4" class="page-view p-5 hidden flex-col flex-grow">
-            <h2 class="text-lg font-bold text-white mb-4">Cadastro Premium de Aluno</h2>
-            <form class="space-y-4 mb-6" onsubmit="event.preventDefault(); handleRegisterStudent();">
-                <div class="flex items-center space-x-4 bg-[#111827] p-3 rounded-lg border border-gray-800">
-                    <div class="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center relative overflow-hidden bg-gray-800">
-                        <input type="file" id="student-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImage(this, 'student-photo-preview')">
-                        <img id="student-photo-preview" class="w-full h-full object-cover hidden">
-                        <span id="photo-placeholder" class="text-[10px] text-gray-400 text-center px-1">Upload Foto</span>
-                    </div>
-                    <p class="text-xs text-gray-400">Toque no círculo para carregar a foto do aluno.</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 mb-1">Nome Completo</label>
-                    <input type="text" id="student-name" required class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#dc2626]">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 mb-1">WhatsApp</label>
-                    <input type="text" id="student-whatsapp" required placeholder="(XX) XXXXX-XXXX" oninput="maskWhatsApp(this)" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#dc2626]">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Plano Contratado</label>
-                        <select id="student-plan" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
-                            <option value="Mensal">Mensal</option>
-                            <option value="Trimestral">Trimestral</option>
-                            <option value="Semestral">Semestral</option>
-                            <option value="Anual">Anual</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Status Financeiro</label>
-                        <select id="student-status" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
-                            <option value="Em dia">Em dia</option>
-                            <option value="Inadimplente">Inadimplente</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 mb-1">Dropdown de Perfil</label>
-                    <select id="student-profile" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
-                        <option value="Aluno Comercial">Aluno Comercial</option>
-                        <option value="Aluno Atleta">Aluno Atleta</option>
-                        <option value="Aluno Bolsista">Aluno Bolsista</option>
-                        <option value="Aluno Instrutor">Aluno Instrutor</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Modalidade</label>
-                        <select id="student-modality" onchange="updateGraduationDropdown(this.value, 'student-graduation')" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
-                            <option value="Muay Thai">Muay Thai</option>
-                            <option value="Boxe">Boxe</option>
-                            <option value="MMA">MMA</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-1">Graduação</label>
-                        <select id="student-graduation" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none"></select>
-                    </div>
-                </div>
-                <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="navigateTo('page-3')" class="w-1/3 bg-gray-800 text-gray-300 rounded-lg text-xs font-semibold">Cancelar</button>
-                    <button type="submit" class="w-2/3 bg-[#dc2626] hover:bg-red-700 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-wider">Salvar e Emitir Acesso</button>
-                </div>
-            </form>
-        </section>
+        <div id="p4" class="page">
+            <h2>Cadastro de Aluno</h2>
+            <div class="photo-upload-container">
+                <label for="foto-upload" id="aluno-foto-preview" class="avatar-placeholder">Toque para Foto</label>
+                <input type="file" id="foto-upload" accept="image/*" style="display:none;" onchange="previewFoto(event, 'aluno-foto-preview')">
+            </div>
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" id="cad-aluno-nome">
+            </div>
+            <div class="form-group">
+                <label>WhatsApp</label>
+                <input type="text" id="cad-aluno-whatsapp" placeholder="(XX) XXXXX-XXXX">
+            </div>
+            <div class="form-group">
+                <label>Plano</label>
+                <select id="cad-aluno-plano">
+                    <option value="Mensal">Mensal</option>
+                    <option value="Trimestral">Trimestral</option>
+                    <option value="Semestral">Semestral</option>
+                    <option value="Anual">Anual</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status Financeiro Inicial</label>
+                <select id="cad-aluno-status">
+                    <option value="Em dia">Em dia</option>
+                    <option value="Inadimplente">Inadimplente</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Perfil</label>
+                <select id="cad-aluno-perfil">
+                    <option value="Comercial">Aluno Comercial</option>
+                    <option value="Atleta">Aluno Atleta</option>
+                    <option value="Bolsista">Aluno Bolsista</option>
+                    <option value="Instrutor">Aluno Instrutor</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Modalidade Principal</label>
+                <select id="cad-aluno-modalidade">
+                    <option value="Muay Thai">Muay Thai</option>
+                    <option value="Boxe">Boxe</option>
+                    <option value="MMA">MMA</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nível / Graduação</label>
+                <select id="cad-aluno-graduacao">
+                    <option value="Branco">Branco (Muay Thai)</option>
+                    <option value="Vermelho">Vermelho (Muay Thai)</option>
+                    <option value="Preta (Instrutor)">Preta Instrutor (Muay Thai)</option>
+                    <option value="Classe D (Iniciante)">Classe D (Boxe)</option>
+                    <option value="Classe A (Elite)">Classe A (Boxe)</option>
+                    <option value="Faixa Branca">Faixa Branca (MMA)</option>
+                    <option value="Faixa Preta">Faixa Preta (MMA)</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="salvarAluno()">Salvar e Emitir Acesso</button>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Cancelar</button>
+        </div>
 
-        <!-- INCLUSÃO DA PARTE 2: LINK DINÂMICO PARA AS OUTRAS PÁGINAS -->
-        <div id="dynamic-pages-container"></div>
+        <!-- PÁGINA 5: INCLUIR CT -->
+        <div id="p5" class="page">
+            <h2>Registrar Academia / CT</h2>
+            <div class="form-group"><label>Nome da Filial</label><input type="text" id="cad-ct-nome"></div>
+            <div class="form-group"><label>CNPJ / Registro</label><input type="text" id="cad-ct-cnpj"></div>
+            <div class="form-group"><label>Responsável</label><input type="text" id="cad-ct-responsavel"></div>
+            <div class="form-group"><label>Endereço Completo</label><input type="text" id="cad-ct-endereco"></div>
+            <div class="form-group"><label>Cidade / Estado</label><input type="text" id="cad-ct-cidade"></div>
+            <div class="form-group"><label>WhatsApp Comercial</label><input type="text" id="cad-ct-whatsapp"></div>
+            <div class="form-group"><label>Capacidade por Horário</label><input type="number" id="cad-ct-capacidade"></div>
+            <div class="form-group"><label>Mensalidade Padrão</label><input type="number" id="cad-ct-mensalidade"></div>
+            <button class="btn btn-primary" onclick="salvarCT()">Registrar Unidade</button>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
+        </div>
+
+        <!-- PÁGINA 6: DASHBOARD FINANCEIRO -->
+        <div id="p6" class="page">
+            <h2>Dashboard Financeiro</h2>
+            <div class="metrics-top-panel">
+                <div class="metric-box"><label>Faturamento</label><span id="dash-faturamento" class="text-success">R$ 0,00</span></div>
+                <div class="metric-box"><label>Inadimplência</label><span id="dash-inadimplencia" class="text-danger">R$ 0,00</span></div>
+                <div class="metric-box"><label>Recebido</label><span id="dash-recebido" style="color:white;">R$ 0,00</span></div>
+            </div>
+            <h3>Módulo de Inadimplência Automatizado</h3>
+            <div id="dash-lista-devedores" class="list-container"></div>
+            <button class="btn btn-accent" onclick="alert('Relatório Processado em Tempo Real!')">Fluxo de Caixa Mensal</button>
+            <button class="btn btn-accent" onclick="navekarPara(3)">Voltar</button>
+        </div>
+
+        <!-- PÁGINA 7: GESTÃO DE EQUIPE -->
+        <div id="p7" class="page">
+            <h2>Adicionar Administradores</h2>
+            <div class="form-group"><label>Nome do Gestor</label><input type="text" id="adm-nome"></div>
+            <div class="form-group"><label>E-mail de Acesso</label><input type="email" id="adm-email"></div>
+            <div class="form-group"><label>Senha Provisória</label><input type="password" id="adm-senha"></div>
+            <div class="form-group">
+                <label>Nível</label>
+                <select id="adm-nivel">
+                    <option value="Administrador Integral">Administrador Integral</option>
+                    <option value="Apoio Administrativo">Apoio Administrativo</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="salvarNovoAdmin()">Atribuir Novo Gestor</button>
+            <h3 style="margin-top:20px;">Promover Aluno Existente</h3>
+            <div id="lista-promocao-alunos" class="list-container"></div>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
+        </div>
+
+        <!-- PÁGINA 8: FREQUÊNCIA / CHAMADAS -->
+        <div id="p8" class="page">
+            <h2>Painel de Presença</h2>
+            <div class="form-group"><label>Selecione o Aluno</label><select id="presenca-aluno"></select></div>
+            <div class="form-group"><label>Selecione a Unidade / CT</label><select id="presenca-ct"></select></div>
+            <button class="btn btn-primary" onclick="confirmarPresenca()">Confirmar Presença ✔️</button>
+            <h3 style="margin-top:20px;">Mural de Frequência Recente</h3>
+            <div id="mural-chamadas" class="list-container"></div>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
+        </div>
+
+        <!-- PÁGINA 9: CENTRAL DE REGISTROS -->
+        <div id="p9" class="page">
+            <h2>Central de Registros</h2>
+            <input type="text" id="pesquisa-reativa" placeholder="🔍 Buscar aluno, CT ou admin..." oninput="renderizarCadastros()" style="margin-bottom:15px;">
+            <div id="lista-sincronizada" class="list-container" style="max-height:400px;"></div>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
+        </div>
+
+        <!-- PÁGINA 10: TELA DE EDIÇÃO DEDICADA -->
+        <div id="p10" class="page">
+            <h2>Editar Registro</h2>
+            <div class="photo-upload-container">
+                <label for="edit-foto-upload" id="edit-foto-preview" class="avatar-placeholder">Foto</label>
+                <input type="file" id="edit-foto-upload" accept="image/*" style="display:none;" onchange="previewFoto(event, 'edit-foto-preview')">
+            </div>
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="edit-nome"></div>
+            <div class="form-group"><label>Plano</label><input type="text" id="edit-plano"></div>
+            <div class="form-group"><label>Modalidade</label><input type="text" id="edit-modalidade"></div>
+            <div class="form-group"><label>Graduação</label><input type="text" id="edit-graduacao"></div>
+            <button class="btn btn-primary" onclick="salvarAlteracoesDedicadas()">Salvar Alterações</button>
+            <button class="btn btn-accent" onclick="navegarPara(9)">Cancelar</button>
+        </div>
+
+        <!-- PÁGINA 11: RELATÓRIOS AVANÇADOS -->
+        <div id="p11" class="page">
+            <h2>Filtro de Relatórios</h2>
+            <div class="form-group">
+                <label>Categoria de Aluno</label>
+                <select id="rep-categoria">
+                    <option value="Todos">Todos</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Atleta">Atleta</option>
+                    <option value="Bolsista">Bolsista</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Modalidade</label>
+                <select id="rep-modalidade">
+                    <option value="Todas">Todas</option>
+                    <option value="Muay Thai">Muay Thai</option>
+                    <option value="Boxe">Boxe</option>
+                    <option value="MMA">MMA</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="processarFiltroRelatorio()">Gerar Relatório na Tela</button>
+            <div id="relatorio-resultado-tela" class="list-container" style="margin-top:15px;"></div>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
+        </div>
+
+        <!-- PÁGINA 12: ÁREA EXCLUSIVA DO ALUNO -->
+        <div id="p12" class="page">
+            <div class="brand-header">
+                <div class="tag-aluno-header" id="aluno-tag-perfil">[PERFIL]</div>
+                <h2 id="aluno-perfil-nome">Nome do Aluno</h2>
+                <p id="aluno-tag-graduacao" style="color:#ba0f14; font-weight:bold;">Modalidade - Graduação</p>
+            </div>
+            <div id="aluno-status-financeiro" class="status-box"></div>
+            <div class="metrics-top-panel" style="grid-template-columns: 1fr; margin-top:10px;">
+                <div class="metric-box">
+                    <label>Frequência Mensal</label>
+                    <span id="aluno-contador-freq" style="font-size:24px; color:#ba0f14;">0</span> Presenças
+                </div>
+            </div>
+            <h3 style="margin-top:15px;">Histórico de Aulas</h3>
+            <div id="aluno-historico-aulas" class="list-container"></div>
+            <button class="btn btn-accent" onclick="desconectarConta()">Sair da Conta</button>
+        </div>
+
+        <!-- PÁGINA 13: CONFIGURAÇÕES, MENSALIDADES E AUDITORIA -->
+        <div id="p13" class="page">
+            <h2>Configurações do Sistema</h2>
+            <h3>Módulo A: Valores de Mensalidade por Perfil</h3>
+            <div class="form-group"><label>Mensalidade Aluno Comercial (R$)</label><input type="number" id="conf-preco-comercial"></div>
+            <div class="form-group"><label>Mensalidade Aluno Atleta (R$)</label><input type="number" id="conf-preco-atleta"></div>
+            <div class="form-group"><label>Mensalidade Aluno Bolsista (R$)</label><input type="number" id="conf-preco-bolsista" disabled></div>
+            <div class="form-group"><label>Mensalidade Aluno Instrutor (R$)</label><input type="number" id="conf-preco-instrutor"></div>
+            <button class="btn btn-primary" onclick="salvarTabelaPrecos()">Salvar Nova Tabela de Preços</button>
+            
+            <h3 style="margin-top:25px;">Módulo B: Histórico de Auditoria Digital</h3>
+            <div id="timeline-auditoria" class="timeline"></div>
+            <button class="btn btn-accent" onclick="navegarPara(3)" style="margin-top:15px;">← Voltar</button>
+        </div>
 
         <!-- RODAPÉ FIXO GLOBAL -->
-        <footer id="global-footer" class="absolute bottom-0 left-0 right-0 h-16 bg-[#111827] border-t border-gray-800 flex items-center justify-center px-6 hidden">
-            <button onclick="navigateTo('page-9')" class="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border border-gray-700">
-                <i data-lucide="database" class="w-4 h-4"></i>
-                <span>Cadastros</span>
-            </button>
-        </footer>
+        <div class="footer-fixo">
+            <button class="btn-footer" onclick="navegarPara(9)">🗂️ Cadastros</button>
+        </div>
 
     </div>
-
-    <!-- Carga do Script unificado de lógica -->
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
