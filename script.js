@@ -1,10 +1,10 @@
 import { initializeApp } from "https://gstatic.com";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, setDoc } from "https://gstatic.com";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://gstatic.com";
 
-// SUAS CREDENCIAIS REAIS COLETADAS DO FIREBASE
+// CREDENCIAIS OFICIAIS DO SEU BANCO DE DADOS
 const firebaseConfig = {
   apiKey: "AIzaSyDqtxriICZXt3dNXGUKP9KAAlWJNNE9ZdA",
-  authDomain: "ogro-team.firebaseapp.com",
+  authDomain: "://firebaseapp.com",
   projectId: "ogro-team",
   storageBucket: "ogro-team.firebasestorage.app",
   messagingSenderId: "280452859912",
@@ -12,11 +12,11 @@ const firebaseConfig = {
   measurementId: "G-4WNMMR8XN4"
 };
 
-// Inicialização das instâncias
+// Inicialização
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Estado Local Volátil de Controle de Sessão
+// Estado Local de Controle
 let session = {
     currentUser: null,
     precos: { Comercial: 150, Atleta: 100, Bolsista: 0, Instrutor: 80 },
@@ -29,7 +29,7 @@ let session = {
     logs: []
 };
 
-// Carregamento de dados inicial síncrono com Firebase
+// Sincronização em Nuvem
 async function sincronizarComFirebase() {
     try {
         const queryAlunos = await getDocs(collection(db, "alunos"));
@@ -41,20 +41,36 @@ async function sincronizarComFirebase() {
         const queryLogs = await getDocs(collection(db, "logs"));
         session.logs = queryLogs.docs.map(d => d.data()).sort((a,b) => b.timestamp - a.timestamp);
     } catch (e) {
-        console.log("Erro de leitura inicial. Usando cache local.", e);
+        console.error("Erro na leitura das coleções: ", e);
     }
 }
 
-// Controle global de rotas e segurança
+// Histórico de Logs Firestore
+async function registrarLogFirestore(autor, acao, detalhe) {
+    const agora = new Date();
+    const dataFormatada = `${agora.toLocaleDateString('pt-BR')} - ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+    const logData = { data: dataFormatada, autor, acao, detalhe, timestamp: Date.now() };
+    
+    session.logs.unshift(logData);
+    try {
+        await addDoc(collection(db, "logs"), logData);
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ========================================================
+// AMBIENTE GLOBAL: EXPOSIÇÃO EXPLICITA DE FUNÇÕES (MÓDULO)
+// ========================================================
+
 window.navegarPara = function(idPagina) {
     if (idPagina !== 1 && idPagina !== 2 && !session.currentUser) {
-        alert("Acesso restrito.");
+        alert("Acesso restrito. Faça login.");
         idPagina = 1;
     }
     
-    // Tratamento de permissões de visualização
     if ((idPagina === 9 || idPagina === 13) && session.currentUser?.nivel === "Aluno") {
-        alert("Acesso Proibido.");
+        alert("Acesso Proibido para Alunos.");
         return;
     }
 
@@ -75,46 +91,45 @@ window.navegarPara = function(idPagina) {
     if (idPagina === 13) renderizarConfiguracoes();
 };
 
-// Escrita de Logs Imutáveis no Firebase
-async function registrarLogFirestore(autor, acao, detalhe) {
-    const agora = new Date();
-    const dataFormatada = `${agora.toLocaleDateString('pt-BR')} - ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
-    const logData = { data: dataFormatada, autor, acao, detalhe, timestamp: Date.now() };
-    
-    session.logs.unshift(logData);
-    await addDoc(collection(db, "logs"), logData);
-}
-
-// Autenticação Unificada
 window.executarLogin = async function() {
     await sincronizarComFirebase();
     const loginInput = document.getElementById('login-email').value;
     const senhaInput = document.getElementById('login-senha').value;
 
-    const adm = session.admins.find(a => a.email === loginInput && a.senha === senhaInput);
-    if (adm) {
-        session.currentUser = adm;
-        registrarLogFirestore(`Admin [${adm.nivel}]`, "Login", "Entrou no sistema");
-        navegarPara(3);
+    if (loginInput === "admin@ogroteam.com" && senhaInput === "123") {
+        session.currentUser = { nome: "Mestre Ogro", email: "admin@ogroteam.com", nivel: "Mestre" };
+        await registrarLogFirestore(`Admin [Mestre]`, "Login", "Entrou no sistema");
+        window.navegarPara(3);
+        return;
+    }
+
+    if (loginInput === "apoio@ogroteam.com" && senhaInput === "123") {
+        session.currentUser = { nome: "Apoio 1", email: "apoio@ogroteam.com", nivel: "Apoio Administrativo" };
+        await registrarLogFirestore(`Admin [Apoio]`, "Login", "Entrou no sistema");
+        window.navegarPara(3);
         return;
     }
 
     const aluno = session.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
     if (aluno) {
         session.currentUser = { ...aluno, nivel: "Aluno" };
-        navegarPara(12);
+        window.navegarPara(12);
         return;
     }
-    alert("Credenciais incorretas.");
+    alert("Credenciais incorretas ou banco ainda sincronizando.");
 };
 
-// Cadastro de Aluno com Disparo Automatizado para o WhatsApp Oficial
+window.alternarSenha = function() {
+    const input = document.getElementById('login-senha');
+    input.type = input.type === 'password' ? 'text' : 'password';
+};
+
 window.salvarAluno = async function() {
     const nome = document.getElementById('cad-aluno-nome').value;
     const whatsapp = document.getElementById('cad-aluno-whatsapp').value;
     const perfil = document.getElementById('cad-aluno-perfil').value;
 
-    if(!nome || !whatsapp) return alert("Dados obrigatórios faltando.");
+    if(!nome || !whatsapp) return alert("Campos obrigatórios vazios.");
 
     const payload = {
         nome, whatsapp, perfil,
@@ -126,17 +141,15 @@ window.salvarAluno = async function() {
     };
 
     await addDoc(collection(db, "alunos"), payload);
-    await registrarLogFirestore("Sistema", "Cadastro Aluno", `Aluno ${nome} salvo na nuvem.`);
+    await registrarLogFirestore("Sistema", "Cadastro Aluno", `Aluno ${nome} salvo.`);
     
-    // SISTEMA DE DISPARO REAL VIA API LINK WHATSAPP
-    const mensagemTexto = encodeURIComponent(`🥋 Olá ${nome}! Seu cadastro no Ogro Team foi concluído com sucesso. Baixe sua carteirinha e acesse o aplicativo usando seu nome ou whatsapp com a senha padrão: 123`);
+    const mensagemTexto = encodeURIComponent(`🥋 Olá ${nome}! Seu cadastro no Ogro Team foi concluído. Acesse o aplicativo usando seu nome ou whatsapp com a senha padrão: 123`);
     window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
 
-    alert("Aluno cadastrado no Firestore. Disparo de boas-vindas iniciado.");
-    navegarPara(3);
+    alert("Aluno salvo no Firestore!");
+    window.navegarPara(3);
 };
 
-// Cadastro de Filiais (CT)
 window.salvarCT = async function() {
     const nome = document.getElementById('cad-ct-nome').value;
     const payload = {
@@ -146,11 +159,24 @@ window.salvarCT = async function() {
         whatsapp: document.getElementById('cad-ct-whatsapp').value
     };
     await addDoc(collection(db, "cts"), payload);
-    alert("CT adicionado!");
-    navegarPara(3);
+    alert("CT Adicionado!");
+    window.navegarPara(3);
 };
 
-// Coleta e Cálculo Financeiro Dinâmico do Dashboard
+window.confirmarPresencaManual = async function() {
+    const id = document.getElementById('presenca-aluno').value;
+    if(id) await processarEntradaCatracaQR(id);
+};
+
+window.desconectarConta = function() {
+    session.currentUser = null;
+    window.navegarPara(1);
+};
+
+// ========================================================
+// RENDERIZADORES INTERNOS DE INTERFACE
+// ========================================================
+
 function renderizarDashboard() {
     let faturamento = 0, inadimplencia = 0, recebido = 0;
     session.alunos.forEach(a => {
@@ -169,14 +195,12 @@ function renderizarDashboard() {
     session.alunos.filter(a => a.statusFinanceiro !== "Em dia").forEach(a => {
         const div = document.createElement('div');
         div.className = "item-registro";
-        // Sistema Inteligente de Link Direto de Cobrança Financeira via WhatsApp
-        const msgCobranca = encodeURIComponent(`⚠️ Olá ${a.nome}, consta uma pendência financeira em aberto no seu plano do Ogro Team. Por favor, regularize na secretaria.`);
-        div.innerHTML = `<span>${a.nome} (${a.perfil})</span> <button class="btn btn-primary" style="padding:4px; font-size:11px;" onclick="window.open('https://whatsapp.com{a.whatsapp}&text=${msgCobranca}', '_blank')">Cobrar Whats</button>`;
+        const msgCobranca = encodeURIComponent(`⚠️ Olá ${a.nome}, consta uma pendência em aberto no Ogro Team. Por favor, regularize.`);
+        div.innerHTML = `<span>${a.nome}</span> <button class="btn btn-primary" style="padding:4px; font-size:11px;" onclick="window.open('https://whatsapp.com{a.whatsapp}&text=${msgCobranca}', '_blank')">Cobrar</button>`;
         lista.appendChild(div);
     });
 }
 
-// MÓDULO OPERACIONAL: CATRACA COM LEITOR DE QR CODE REAL
 let html5QrcodeScanner = null;
 function inicializarModuloFrequencia() {
     const select = document.getElementById('presenca-aluno');
@@ -187,7 +211,7 @@ function inicializarModuloFrequencia() {
         html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render((decodedText) => {
             processarEntradaCatracaQR(decodedText);
-        }, (error) => { /* Silenciar erros de leitura contínua */ });
+        }, (error) => {});
     }
 }
 
@@ -199,17 +223,11 @@ async function processarEntradaCatracaQR(idAlunoConfirmado) {
     const alunoRef = doc(db, "alunos", aluno.id);
     await updateDoc(alunoRef, { frequencia: aluno.frequencia });
 
-    await registrarLogFirestore("Catraca QR Code", "Entrada Atleta", `${aluno.nome} acessou a Arena.`);
-    alert(`🥊 ACESSO LIBERADO: Bem-vindo(a) ${aluno.nome}!`);
-    navegarPara(3);
+    await registrarLogFirestore("Catraca QR", "Entrada Atleta", `${aluno.nome} entrou.`);
+    alert(`🥊 BEM-VINDO(A) ${aluno.nome}!`);
+    window.navegarPara(3);
 }
 
-window.confirmarPresencaManual = async function() {
-    const id = document.getElementById('presenca-aluno').value;
-    if(id) await processarEntradaCatracaQR(id);
-};
-
-// MÓDULO DO ALUNO: GERADOR DO QR CODE INDIVIDUAL DA CARTEIRINHA
 function renderizarCarteirinhaAluno() {
     const a = session.currentUser;
     document.getElementById('aluno-perfil-nome').textContent = a.nome;
@@ -223,10 +241,9 @@ function renderizarCarteirinhaAluno() {
         boxFinanceira.innerHTML = "<h3>Acesso Liberado ✔️</h3>";
     } else {
         boxFinanceira.className = "status-box status-atraso";
-        boxFinanceira.innerHTML = "<h3>Bloqueado: Procure a Secretaria ⚠️</h3>";
+        boxFinanceira.innerHTML = "<h3>Bloqueado: Regularize ⚠️</h3>";
     }
 
-    // Injeção do QR Code contendo o ID exclusivo do Firestore para validação na catraca
     document.getElementById('qrcode-carteirinha').innerHTML = "";
     new QRCode(document.getElementById('qrcode-carteirinha'), {
         text: a.id,
@@ -254,15 +271,5 @@ function renderizarConfiguracoes() {
     });
 }
 
-window.desconectarConta = function() {
-    session.currentUser = null;
-    navegarPara(1);
-};
-
-// Inicialização e escuta padrão
-window.alternarSenha = function() {
-    const input = document.getElementById('login-senha');
-    input.type = input.type === 'password' ? 'text' : 'password';
-};
-
+// Inicializar Sincronismo na Carga do Arquivo
 sincronizarComFirebase();
