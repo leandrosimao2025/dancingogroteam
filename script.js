@@ -1,517 +1,268 @@
-// ==========================================
-// BANCO DE DADOS SIMULADO (ESTADO INICIAL)
-// ==========================================
-let state = {
-    currentUser: null,
-    precos: { Comercial: 150, Atleta: 100, Bolsista: 0, Instrutor: 80 },
-    alunos: [
-        { id: 1, nome: "Carlos Silva", whatsapp: "21999998888", plano: "Mensal", statusFinanceiro: "Em dia", perfil: "Comercial", modalidade: "Muay Thai", graduacao: "Vermelho", foto: "", frequencia: 14 },
-        { id: 2, nome: "Marcos Lima", whatsapp: "21988887777", plano: "Trimestral", statusFinanceiro: "Inadimplente", perfil: "Atleta", modalidade: "Boxe", graduacao: "Classe B (Avançado)", foto: "", frequencia: 8 }
-    ],
-    cts: [
-        { id: 1, nome: "CT Matriz", cnpj: "12.345.678/0001-00", responsavel: "Mestre Ogro", endereco: "Rua Principal, 10", cidade: "Rio de Janeiro/RJ", whatsapp: "21977776666", capacidade: 30, mensalidade: 150 }
-    ],
-    admins: [
-        { id: 1, nome: "Mestre Ogro", email: "admin@ogroteam.com", senha: "123", nivel: "Mestre" },
-        { id: 2, nome: "Apoio 1", email: "apoio@ogroteam.com", senha: "123", nivel: "Apoio Administrativo" }
-    ],
-    logs: [
-        { data: "15/05/2026 - 10:14", autor: "Admin [Mestre]", acao: "Alteração de Preço", detalhe: "Alterou a mensalidade de Aluno Atleta para R$ 100,00" },
-        { data: "15/05/2026 - 09:45", autor: "Admin [Apoio 1]", acao: "Presença", detalhe: "Confirmou a presença do aluno Carlos Silva no CT Matriz" }
-    ],
-    editandoId: null,
-    editandoTipo: null
+import { initializeApp } from "https://gstatic.com";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, setDoc } from "https://gstatic.com";
+
+// SUAS CREDENCIAIS REAIS COLETADAS DO FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyDqtxriICZXt3dNXGUKP9KAAlWJNNE9ZdA",
+  authDomain: "ogro-team.firebaseapp.com",
+  projectId: "ogro-team",
+  storageBucket: "ogro-team.firebasestorage.app",
+  messagingSenderId: "280452859912",
+  appId: "1:280452859912:web:341a26ec3cc73f11aa69bd",
+  measurementId: "G-4WNMMR8XN4"
 };
 
-// ==========================================
-// CONTROLE DE NAVEGAÇÃO E TRAVAS DE SEGURANÇA
-// ==========================================
-function navegarPara(idPagina) {
-    // 1. Bloqueia acesso a qualquer página interna se o usuário não estiver logado
-    if (idPagina !== 1 && idPagina !== 2 && !state.currentUser) {
-        alert("Acesso Negado: Você precisa fazer login primeiro.");
-        idPagina = 1; 
-    }
+// Inicialização das instâncias
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    // 2. Bloqueia a Central de Cadastros (Página 9 e 10) e Configurações (Página 13) para Alunos Comuns
-    if ((idPagina === 9 || idPagina === 10 || idPagina === 13) && state.currentUser && state.currentUser.nivel === "Aluno") {
-        alert("Acesso Negado: Seu perfil não possui permissão para ver ou alterar cadastros.");
+// Estado Local Volátil de Controle de Sessão
+let session = {
+    currentUser: null,
+    precos: { Comercial: 150, Atleta: 100, Bolsista: 0, Instrutor: 80 },
+    alunos: [],
+    cts: [],
+    admins: [
+        { nome: "Mestre Ogro", email: "admin@ogroteam.com", senha: "123", nivel: "Mestre" },
+        { nome: "Apoio 1", email: "apoio@ogroteam.com", senha: "123", nivel: "Apoio Administrativo" }
+    ],
+    logs: []
+};
+
+// Carregamento de dados inicial síncrono com Firebase
+async function sincronizarComFirebase() {
+    try {
+        const queryAlunos = await getDocs(collection(db, "alunos"));
+        session.alunos = queryAlunos.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const queryCts = await getDocs(collection(db, "cts"));
+        session.cts = queryCts.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const queryLogs = await getDocs(collection(db, "logs"));
+        session.logs = queryLogs.docs.map(d => d.data()).sort((a,b) => b.timestamp - a.timestamp);
+    } catch (e) {
+        console.log("Erro de leitura inicial. Usando cache local.", e);
+    }
+}
+
+// Controle global de rotas e segurança
+window.navegarPara = function(idPagina) {
+    if (idPagina !== 1 && idPagina !== 2 && !session.currentUser) {
+        alert("Acesso restrito.");
+        idPagina = 1;
+    }
+    
+    // Tratamento de permissões de visualização
+    if ((idPagina === 9 || idPagina === 13) && session.currentUser?.nivel === "Aluno") {
+        alert("Acesso Proibido.");
         return;
     }
 
-    // 3. Bloqueio de segurança específico para a Página 13 (Apenas Mestre/Admin)
-    if (idPagina === 13 && state.currentUser && state.currentUser.nivel === "Apoio Administrativo") {
-        alert("Acesso Negado: Seu perfil de Apoio não possui permissão para esta tela.");
-        return;
-    }
-
-    // Gerencia visibilidade do rodapé baseado no nível do usuário logado
     const footer = document.querySelector('.footer-fixo');
-    if (state.currentUser && (state.currentUser.nivel === "Mestre" || state.currentUser.nivel === "Apoio Administrativo")) {
+    if (session.currentUser && (session.currentUser.nivel === "Mestre" || session.currentUser.nivel === "Apoio Administrativo")) {
         footer.classList.add('show-footer');
     } else {
         footer.classList.remove('show-footer');
     }
 
-    // Oculta todas as páginas e ativa a correta
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const paginaAlvo = document.getElementById(`p${idPagina}`);
-    if (paginaAlvo) paginaAlvo.classList.add('active');
+    document.getElementById(`p${idPagina}`).classList.add('active');
 
-    // Executa renderizações específicas
-    if (idPagina === 3) renderizarMenu();
     if (idPagina === 6) renderizarDashboard();
-    if (idPagina === 7) renderizarAdmins();
-    if (idPagina === 8) renderizarPresenca();
+    if (idPagina === 8) inicializarModuloFrequencia();
     if (idPagina === 9) renderizarCadastros();
-    if (idPagina === 11) renderizarRelatorios();
-    if (idPagina === 12) renderizarAreaAluno();
+    if (idPagina === 12) renderizarCarteirinhaAluno();
     if (idPagina === 13) renderizarConfiguracoes();
-}
+};
 
-function registrarLog(autor, acao, detalhe) {
+// Escrita de Logs Imutáveis no Firebase
+async function registrarLogFirestore(autor, acao, detalhe) {
     const agora = new Date();
-    const dataFormatada = `${agora.toLocaleDateString('pt-BR')} - ${agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}`;
-    state.logs.unshift({ data: dataFormatada, autor, acao, detalhe });
+    const dataFormatada = `${agora.toLocaleDateString('pt-BR')} - ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+    const logData = { data: dataFormatada, autor, acao, detalhe, timestamp: Date.now() };
+    
+    session.logs.unshift(logData);
+    await addDoc(collection(db, "logs"), logData);
 }
 
-// ==========================================
-// PÁGINA 1 & 2: AUTENTICAÇÃO E SENHA
-// ==========================================
-function executarLogin() {
+// Autenticação Unificada
+window.executarLogin = async function() {
+    await sincronizarComFirebase();
     const loginInput = document.getElementById('login-email').value;
     const senhaInput = document.getElementById('login-senha').value;
 
-    const adm = state.admins.find(a => (a.email === loginInput || a.nome === loginInput) && a.senha === senhaInput);
+    const adm = session.admins.find(a => a.email === loginInput && a.senha === senhaInput);
     if (adm) {
-        state.currentUser = adm;
-        registrarLog(`Admin [${adm.nivel}]`, "Login", `Efetuou acesso ao sistema.`);
+        session.currentUser = adm;
+        registrarLogFirestore(`Admin [${adm.nivel}]`, "Login", "Entrou no sistema");
         navegarPara(3);
         return;
     }
 
-    const aluno = state.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
+    const aluno = session.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
     if (aluno) {
-        state.currentUser = { ...aluno, nivel: aluno.perfil === "Instrutor" ? "Aluno Instrutor" : "Aluno" };
-        navegarPara(aluno.perfil === "Instrutor" ? 8 : 12);
+        session.currentUser = { ...aluno, nivel: "Aluno" };
+        navegarPara(12);
         return;
     }
+    alert("Credenciais incorretas.");
+};
 
-    alert("Credenciais inválidas!");
-}
-
-function alternarSenha() {
-    const input = document.getElementById('login-senha');
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
-
-function atualizarSenhaReal() {
-    const usuario = document.getElementById('recup-usuario').value;
-    const nova = document.getElementById('recup-nova').value;
-    
-    let adm = state.admins.find(a => a.email === usuario || a.nome === usuario);
-    if (adm) {
-        adm.senha = nova;
-        registrarLog(`Sistema`, "Alteração Credencial", `Senha do administrador ${adm.nome} alterada.`);
-        alert("Senha updated com sucesso!");
-        navegarPara(1);
-        return;
-    }
-    alert("Usuário não encontrado.");
-}
-
-// ==========================================
-// PÁGINA 3: MENUS DINÂMICOS
-// ==========================================
-function renderizarMenu() {
-    const btnConfig = document.getElementById('card-config');
-    if (state.currentUser && state.currentUser.nivel === "Apoio Administrativo") {
-        btnConfig.style.opacity = "0.5";
-        btnConfig.style.cursor = "not-allowed";
-    } else {
-        btnConfig.style.opacity = "1";
-        btnConfig.style.cursor = "pointer";
-    }
-}
-
-// ==========================================
-// PÁGINA 4: CADASTRO DE ALUNOS
-// ==========================================
-function previewFoto(event, elementId) {
-    const reader = new FileReader();
-    reader.onload = function() {
-        const preview = document.getElementById(elementId);
-        preview.style.backgroundImage = `url(${reader.result})`;
-        preview.textContent = "";
-    }
-    if(event.target.files) reader.readAsDataURL(event.target.files);
-}
-
-function salvarAluno() {
+// Cadastro de Aluno com Disparo Automatizado para o WhatsApp Oficial
+window.salvarAluno = async function() {
     const nome = document.getElementById('cad-aluno-nome').value;
     const whatsapp = document.getElementById('cad-aluno-whatsapp').value;
-    const plano = document.getElementById('cad-aluno-plano').value;
-    const status = document.getElementById('cad-aluno-status').value;
     const perfil = document.getElementById('cad-aluno-perfil').value;
-    const modalidade = document.getElementById('cad-aluno-modalidade').value;
-    const graduacao = document.getElementById('cad-aluno-graduacao').value;
 
-    if(!nome || !whatsapp) return alert("Preencha o nome e whatsapp!");
+    if(!nome || !whatsapp) return alert("Dados obrigatórios faltando.");
 
-    const novoAluno = {
-        id: Date.now(),
-        nome, whatsapp, plano, statusFinanceiro: status, perfil, modalidade, graduacao,
-        foto: document.getElementById('aluno-foto-preview').style.backgroundImage || "",
+    const payload = {
+        nome, whatsapp, perfil,
+        plano: document.getElementById('cad-aluno-plano').value,
+        statusFinanceiro: document.getElementById('cad-aluno-status').value,
+        modalidade: document.getElementById('cad-aluno-modalidade').value,
+        graduacao: document.getElementById('cad-aluno-graduacao').value,
         frequencia: 0
     };
 
-    state.alunos.push(novoAluno);
-    registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Cadastro Aluno", `Cadastrou o aluno ${nome} no perfil ${perfil}.`);
+    await addDoc(collection(db, "alunos"), payload);
+    await registrarLogFirestore("Sistema", "Cadastro Aluno", `Aluno ${nome} salvo na nuvem.`);
     
-    alert(`Mensagem do WhatsApp gerada:\n"Olá ${nome}, seu acesso ao Ogro Team está liberado!"`);
+    // SISTEMA DE DISPARO REAL VIA API LINK WHATSAPP
+    const mensagemTexto = encodeURIComponent(`🥋 Olá ${nome}! Seu cadastro no Ogro Team foi concluído com sucesso. Baixe sua carteirinha e acesse o aplicativo usando seu nome ou whatsapp com a senha padrão: 123`);
+    window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
+
+    alert("Aluno cadastrado no Firestore. Disparo de boas-vindas iniciado.");
     navegarPara(3);
-}
+};
 
-// ==========================================
-// PÁGINA 5: CADASTRO DE FILIAIS (CT)
-// ==========================================
-function salvarCT() {
+// Cadastro de Filiais (CT)
+window.salvarCT = async function() {
     const nome = document.getElementById('cad-ct-nome').value;
-    if(!nome) return alert("Preencha o nome da filial!");
-
-    state.cts.push({
-        id: Date.now(),
+    const payload = {
         nome,
         cnpj: document.getElementById('cad-ct-cnpj').value,
         responsavel: document.getElementById('cad-ct-responsavel').value,
-        endereco: document.getElementById('cad-ct-endereco').value,
-        cidade: document.getElementById('cad-ct-cidade').value,
-        whatsapp: document.getElementById('cad-ct-whatsapp').value,
-        capacidade: document.getElementById('cad-ct-capacidade').value,
-        mensalidade: parseFloat(document.getElementById('cad-ct-mensalidade').value) || 0
-    });
-
-    registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Cadastro CT", `Registrou a filial ${nome}.`);
+        whatsapp: document.getElementById('cad-ct-whatsapp').value
+    };
+    await addDoc(collection(db, "cts"), payload);
+    alert("CT adicionado!");
     navegarPara(3);
-}
+};
 
-// ==========================================
-// PÁGINA 6: DASHBOARD FINANCEIRO
-// ==========================================
+// Coleta e Cálculo Financeiro Dinâmico do Dashboard
 function renderizarDashboard() {
-    let faturamento = 0;
-    let inadimplentesCount = 0;
-    let letPlatformRecebido = 0;
-
-    state.alunos.forEach(a => {
-        const valorPlano = state.precos[a.perfil] || 0;
-        if (a.statusFinanceiro === "Em dia") {
-            faturamento += valorPlano;
-            letPlatformRecebido += valorPlano;
-        } else {
-            faturamento += valorPlano;
-            inadimplentesCount += valorPlano;
-        }
+    let faturamento = 0, inadimplencia = 0, recebido = 0;
+    session.alunos.forEach(a => {
+        const valor = session.precos[a.perfil] || 0;
+        faturamento += valor;
+        if (a.statusFinanceiro === "Em dia") recebido += valor;
+        else inadimplencia += valor;
     });
 
     document.getElementById('dash-faturamento').textContent = `R$ ${faturamento.toFixed(2)}`;
-    document.getElementById('dash-inadimplencia').textContent = `R$ ${inadimplentesCount.toFixed(2)}`;
-    document.getElementById('dash-recebido').textContent = `R$ ${letPlatformRecebido.toFixed(2)}`;
+    document.getElementById('dash-inadimplencia').textContent = `R$ ${inadimplencia.toFixed(2)}`;
+    document.getElementById('dash-recebido').textContent = `R$ ${recebido.toFixed(2)}`;
 
-    const listaDevedores = document.getElementById('dash-lista-devedores');
-    listaDevedores.innerHTML = "";
-    
-    state.alunos.filter(a => a.statusFinanceiro === "Inadimplente").forEach(a => {
+    const lista = document.getElementById('dash-lista-devedores');
+    lista.innerHTML = "";
+    session.alunos.filter(a => a.statusFinanceiro !== "Em dia").forEach(a => {
         const div = document.createElement('div');
         div.className = "item-registro";
-        div.innerHTML = `
-            <div>
-                <strong>${a.nome}</strong> <br>
-                <small class="badge badge-vermelho">${a.perfil}</small>
-            </div>
-            <button class="btn btn-primary" onclick="alert('Cobrança disparada via WhatsApp para ${a.whatsapp}')">Cobrar</button>
-        `;
-        listaDevedores.appendChild(div);
+        // Sistema Inteligente de Link Direto de Cobrança Financeira via WhatsApp
+        const msgCobranca = encodeURIComponent(`⚠️ Olá ${a.nome}, consta uma pendência financeira em aberto no seu plano do Ogro Team. Por favor, regularize na secretaria.`);
+        div.innerHTML = `<span>${a.nome} (${a.perfil})</span> <button class="btn btn-primary" style="padding:4px; font-size:11px;" onclick="window.open('https://whatsapp.com{a.whatsapp}&text=${msgCobranca}', '_blank')">Cobrar Whats</button>`;
+        lista.appendChild(div);
     });
 }
 
-// ==========================================
-// PÁGINA 7: GESTÃO DE EQUIPE
-// ==========================================
-function renderizarAdmins() {
-    const container = document.getElementById('lista-promocao-alunos');
-    container.innerHTML = "";
+// MÓDULO OPERACIONAL: CATRACA COM LEITOR DE QR CODE REAL
+let html5QrcodeScanner = null;
+function inicializarModuloFrequencia() {
+    const select = document.getElementById('presenca-aluno');
+    select.innerHTML = "";
+    session.alunos.forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
 
-    state.alunos.forEach(a => {
-        const div = document.createElement('div');
-        div.className = "item-registro";
-        div.innerHTML = `
-            <span>${a.nome} (${a.perfil})</span>
-            <div>
-                <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="promoverUsuario(${a.id}, 'Administrador Integral')">Promover Admin</button>
-                <button class="btn btn-accent" style="padding:4px 8px; font-size:12px; background:#6b7280;" onclick="promoverUsuario(${a.id}, 'Apoio Administrativo')">Promover Apoio</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render((decodedText) => {
+            processarEntradaCatracaQR(decodedText);
+        }, (error) => { /* Silenciar erros de leitura contínua */ });
+    }
 }
 
-function salvarNovoAdmin() {
-    const nome = document.getElementById('adm-nome').value;
-    const email = document.getElementById('adm-email').value;
-    const senha = document.getElementById('adm-senha').value;
-    const nivel = document.getElementById('adm-nivel').value;
-
-    if(!nome || !email || !senha) return alert("Preencha todos os campos!");
-
-    state.admins.push({ id: Date.now(), nome, email, senha, nivel });
-    registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Nova Atribuição", `Criou gestor ${nome} como ${nivel}.`);
-    alert("Novo gestor adicionado!");
-    renderizarAdmins();
-}
-
-function promoverUsuario(alunoId, nivelAlvo) {
-    const aluno = state.alunos.find(a => a.id === alunoId);
+async function processarEntradaCatracaQR(idAlunoConfirmado) {
+    const aluno = session.alunos.find(a => a.id === idAlunoConfirmado);
     if (!aluno) return;
 
-    state.admins.push({
-        id: Date.now(),
-        nome: aluno.nome,
-        email: `${aluno.nome.toLowerCase().replace(/\s+/g, '')}@ogroteam.com`,
-        senha: "123",
-        nivel: nivelAlvo
-    });
+    aluno.frequencia = (aluno.frequencia || 0) + 1;
+    const alunoRef = doc(db, "alunos", aluno.id);
+    await updateDoc(alunoRef, { frequencia: aluno.frequencia });
 
-    registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Privilégio Alterado", `Promoveu ${aluno.nome} para ${nivelAlvo} 🛡️.`);
-    alert(`${aluno.nome} agora possui acesso administrative de ${nivelAlvo}!`);
+    await registrarLogFirestore("Catraca QR Code", "Entrada Atleta", `${aluno.nome} acessou a Arena.`);
+    alert(`🥊 ACESSO LIBERADO: Bem-vindo(a) ${aluno.nome}!`);
+    navegarPara(3);
 }
 
-// ==========================================
-// PÁGINA 8: CHAMADAS E FREQUÊNCIA
-// ==========================================
-function renderizarPresenca() {
-    const selectAluno = document.getElementById('presenca-aluno');
-    const selectCT = document.getElementById('presenca-ct');
-    
-    selectAluno.innerHTML = "";
-    selectCT.innerHTML = "";
+window.confirmarPresencaManual = async function() {
+    const id = document.getElementById('presenca-aluno').value;
+    if(id) await processarEntradaCatracaQR(id);
+};
 
-    state.alunos.forEach(a => selectAluno.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
-    state.cts.forEach(c => selectCT.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
-}
-
-// ==========================================
-// CONFIRMAR PRESENÇA E CADASTROS
-// ==========================================
-function confirmarPresenca() {
-    const idAluno = document.getElementById('presenca-aluno').value;
-    const idCT = document.getElementById('presenca-ct').value;
-
-    const aluno = state.alunos.find(a => a.id == idAluno);
-    const ct = state.cts.find(c => c.id == idCT);
-
-    if(!aluno || !ct) return;
-
-    aluno.frequencia += 1;
-    registrarLog(`Admin [${state.currentUser?.nivel || 'Sistema'}]`, "Presença", `Confirmou a presença do aluno ${aluno.nome} no ${ct.nome}.`);
-
-    const mural = document.getElementById('mural-chamadas');
-    const item = document.createElement('div');
-    item.className = "item-registro";
-    item.innerHTML = `<strong>${new Date().toLocaleTimeString('pt-BR')}</strong> - ${aluno.nome} deu entrada no ${ct.nome}`;
-    mural.insertBefore(item, mural.firstChild);
-
-    alert(`Frequência registrada com sucesso para ${aluno.nome}!`);
-}
-
-function renderizarCadastros() {
-    const busca = document.getElementById('pesquisa-reativa').value.toLowerCase();
-    const container = document.getElementById('lista-sincronizada');
-    container.innerHTML = "";
-
-    state.alunos.filter(a => a.nome.toLowerCase().includes(busca)).forEach(a => {
-        const div = document.createElement('div');
-        div.className = "item-registro";
-        div.innerHTML = `
-            <div>
-                <strong>${a.nome}</strong> 🛡️ <small class="badge badge-primary">${a.modalidade} - ${a.graduacao}</small> <br>
-                <small style="color:#9ca3af;">Perfil: ${a.perfil} | Plano: ${a.plano}</small>
-            </div>
-            <div>
-                <button class="btn btn-accent" style="padding:4px 8px; font-size:12px;" onclick="abrirEdicao(${a.id}, 'aluno')">Editar</button>
-                <button class="btn btn-vermelho" style="padding:4px 8px; font-size:12px;" onclick="excluirRegistro(${a.id}, 'aluno')">Excluir</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-
-    state.cts.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
-        const div = document.createElement('div');
-        div.className = "item-registro";
-        div.innerHTML = `
-            <div><strong>${c.nome} (CT)</strong><br><small style="color:#9ca3af;">Responsável: ${c.responsavel}</small></div>
-            <div>
-                <button class="btn btn-vermelho" style="padding:4px 8px; font-size:12px;" onclick="excluirRegistro(${c.id}, 'ct')">Excluir</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function excluirRegistro(id, tipo) {
-    if(!confirm("Tem certeza que deseja deletar este item?")) return;
-
-    if(tipo === 'aluno') {
-        const index = state.alunos.findIndex(a => a.id === id);
-        const item = state.alunos[index];
-        registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Exclusão", `Excluiu o registro do aluno ${item.nome} (${item.plano}).`);
-        state.alunos.splice(index, 1);
-    } else if(tipo === 'ct') {
-        const index = state.cts.findIndex(c => c.id === id);
-        const item = state.cts[index];
-        registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Exclusão", `Excluiu a filial ${item.nome}.`);
-        state.cts.splice(index, 1);
-    }
-    renderizarCadastros();
-}
-
-function abrirEdicao(id, tipo) {
-    state.editandoId = id;
-    state.editandoTipo = tipo;
-    
-    if(tipo === 'aluno') {
-        const aluno = state.alunos.find(a => a.id === id);
-        document.getElementById('edit-nome').value = aluno.nome;
-        document.getElementById('edit-plano').value = aluno.plano;
-        document.getElementById('edit-modalidade').value = aluno.modalidade;
-        document.getElementById('edit-graduacao').value = aluno.graduacao;
-        document.getElementById('edit-foto-preview').style.backgroundImage = aluno.foto;
-    }
-    navegarPara(10);
-}
-
-function salvarAlteracoesDedicadas() {
-    if(state.editandoTipo === 'aluno') {
-        const aluno = state.alunos.find(a => a.id === state.editandoId);
-        const modalidadeNova = document.getElementById('edit-modalidade').value;
-        const graduacaoNova = document.getElementById('edit-graduacao').value;
-
-        if(aluno.graduacao !== graduacaoNova) {
-            registrarLog(
-                `Admin [${state.currentUser?.nivel || 'Mestre'}]`, 
-                "Graduação Alterada", 
-                `O usuário alterou a graduação do aluno ${aluno.nome} de [${aluno.graduacao}] para [${graduacaoNova}]`
-            );
-        }
-
-        aluno.nome = document.getElementById('edit-nome').value;
-        aluno.plano = document.getElementById('edit-plano').value;
-        aluno.modalidade = modalidadeNova;
-        aluno.graduacao = graduacaoNova;
-        aluno.foto = document.getElementById('edit-foto-preview').style.backgroundImage || "";
-    }
-    alert("Alterações salvas com sucesso!");
-    navegarPara(9);
-}
-
-// ==========================================
-// PÁGINA 11: RELATÓRIOS
-// ==========================================
-function renderizarRelatorios() {}
-
-function processarFiltroRelatorio() {
-    const cat = document.getElementById('rep-categoria').value;
-    const modalidade = document.getElementById('rep-modalidade').value;
-    const resultadoGrid = document.getElementById('relatorio-resultado-tela');
-    
-    resultadoGrid.innerHTML = "";
-    
-    let filtrados = state.alunos;
-    if(cat !== "Todos") filtrados = filtrados.filter(a => a.perfil === cat);
-    if(modalidade !== "Todas") filtrados = filtrados.filter(a => a.modalidade === modalidade);
-
-    if(filtrados.length === 0) {
-        resultadoGrid.innerHTML = "<p style='color:#9ca3af;'>Nenhum registro encontrado para este filtro.</p>";
-        return;
-    }
-
-    filtrados.forEach(a => {
-        const div = document.createElement('div');
-        div.className = "item-registro";
-        div.innerHTML = `<span><strong>${a.nome}</strong> - ${a.perfil} (${a.modalidade})</span> <span>Status: ${a.statusFinanceiro}</span>`;
-        resultadoGrid.appendChild(div);
-    });
-}
-
-// ==========================================
-// PÁGINA 12: ÁREA DO ALUNO
-// ==========================================
-function renderizarAreaAluno() {
-    if(!state.currentUser) return;
-    const a = state.currentUser;
-
+// MÓDULO DO ALUNO: GERADOR DO QR CODE INDIVIDUAL DA CARTEIRINHA
+function renderizarCarteirinhaAluno() {
+    const a = session.currentUser;
     document.getElementById('aluno-perfil-nome').textContent = a.nome;
     document.getElementById('aluno-tag-perfil').textContent = `[ALUNO ${a.perfil.toUpperCase()}]`;
     document.getElementById('aluno-tag-graduacao').textContent = `${a.modalidade} - ${a.graduacao}`;
-    
-    const statusBox = document.getElementById('aluno-status-financeiro');
-    if(a.statusFinanceiro === "Em dia") {
-        statusBox.className = "status-box status-pago";
-        statusBox.innerHTML = `<h3>Acesso Liberado</h3><p>Sua mensalidade de R$ ${(state.precos[a.perfil] || 0).toFixed(2)} está em dia.</p>`;
+    document.getElementById('aluno-contador-freq').textContent = a.frequencia || 0;
+
+    const boxFinanceira = document.getElementById('aluno-status-financeiro');
+    if (a.statusFinanceiro === "Em dia") {
+        boxFinanceira.className = "status-box status-pago";
+        boxFinanceira.innerHTML = "<h3>Acesso Liberado ✔️</h3>";
     } else {
-        statusBox.className = "status-box status-atraso";
-        statusBox.innerHTML = `<h3>Pendência Financeira</h3><p>Regularize seu plano para evitar bloqueios na catraca.</p>`;
+        boxFinanceira.className = "status-box status-atraso";
+        boxFinanceira.innerHTML = "<h3>Bloqueado: Procure a Secretaria ⚠️</h3>";
     }
 
-    document.getElementById('aluno-contador-freq').textContent = a.frequencia || 0;
-    
-    const hist = document.getElementById('aluno-historico-aulas');
-    hist.innerHTML = `<div class="item-registro"><small>Check-in automático sincronizado em tempo real.</small></div>`;
-}
-
-// ==========================================
-// PÁGINA 13: CONFIGURAÇÕES & AUDITORIA
-// ==========================================
-function renderizarConfiguracoes() {
-    document.getElementById('conf-preco-comercial').value = state.precos.Comercial;
-    document.getElementById('conf-preco-atleta').value = state.precos.Atleta;
-    document.getElementById('conf-preco-bolsista').value = state.precos.Bolsista;
-    document.getElementById('conf-preco-instrutor').value = state.precos.Instrutor;
-
-    const timeline = document.getElementById('timeline-auditoria');
-    timeline.innerHTML = "";
-
-    state.logs.forEach(l => {
-        const item = document.createElement('div');
-        item.className = "timeline-item";
-        item.innerHTML = `
-            <div class="meta">${l.data} | <strong>${l.autor}</strong></div>
-            <div class="acao">Ação: ${l.acao}</div>
-            <div class="detalhe">${l.detalhe}</div>
-        `;
-        timeline.appendChild(item);
+    // Injeção do QR Code contendo o ID exclusivo do Firestore para validação na catraca
+    document.getElementById('qrcode-carteirinha').innerHTML = "";
+    new QRCode(document.getElementById('qrcode-carteirinha'), {
+        text: a.id,
+        width: 128,
+        height: 128
     });
 }
 
-function salvarTabelaPrecos() {
-    const cAntigo = state.precos.Comercial;
-    const aAntigo = state.precos.Atleta;
-
-    state.precos.Comercial = parseFloat(document.getElementById('conf-preco-comercial').value) || 0;
-    state.precos.Atleta = parseFloat(document.getElementById('conf-preco-atleta').value) || 0;
-    state.precos.Instrutor = parseFloat(document.getElementById('conf-preco-instrutor').value) || 0;
-
-    registrarLog(
-        `Admin [${state.currentUser?.nivel || 'Mestre'}]`, 
-        "Tabela de Preços", 
-        `Alterou valores: Comercial de R$${cAntigo} p/ R$${state.precos.Comercial}, Atleta de R$${aAntigo} p/ R$${state.precos.Atleta}.`
-    );
-
-    alert("Tabela de preços atualizada!");
-    renderizarConfiguracoes();
+function renderizarCadastros() {
+    const container = document.getElementById('lista-sincronizada');
+    container.innerHTML = "";
+    session.alunos.forEach(a => {
+        const div = document.createElement('div');
+        div.className = "item-registro";
+        div.innerHTML = `<span><strong>${a.nome}</strong> - ${a.perfil}</span> <span class="badge">${a.statusFinanceiro}</span>`;
+        container.appendChild(div);
+    });
 }
 
-function desconectarConta() {
-    state.currentUser = null;
+function renderizarConfiguracoes() {
+    const timeline = document.getElementById('timeline-auditoria');
+    timeline.innerHTML = "";
+    session.logs.forEach(l => {
+        timeline.innerHTML += `<div class="timeline-item"><div class="meta">${l.data} | <strong>${l.autor}</strong></div><div>${l.detalhe}</div></div>`;
+    });
+}
+
+window.desconectarConta = function() {
+    session.currentUser = null;
     navegarPara(1);
-}
+};
+
+// Inicialização e escuta padrão
+window.alternarSenha = function() {
+    const input = document.getElementById('login-senha');
+    input.type = input.type === 'password' ? 'text' : 'password';
+};
+
+sincronizarComFirebase();
