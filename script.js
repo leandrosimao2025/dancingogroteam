@@ -60,10 +60,10 @@ async function registrarLogFirestore(autor, acao, detalhe) {
 }
 
 // ========================================================
-// AMBIENTE GLOBAL: EXPOSIÇÃO EXPLICITA DE FUNÇÕES (MÓDULO)
+// CAPA INTERMEDIÁRIA GLOBAL PARA CONEXÃO COM O INDEX.HTML
 // ========================================================
 
-window.navegarPara = function(idPagina) {
+window.firebaseNavegar = function(idPagina) {
     if (idPagina !== 1 && idPagina !== 2 && !session.currentUser) {
         alert("Acesso restrito. Faça login.");
         idPagina = 1;
@@ -91,7 +91,7 @@ window.navegarPara = function(idPagina) {
     if (idPagina === 13) renderizarConfiguracoes();
 };
 
-window.executarLogin = async function() {
+window.firebaseLogin = async function() {
     await sincronizarComFirebase();
     const loginInput = document.getElementById('login-email').value;
     const senhaInput = document.getElementById('login-senha').value;
@@ -99,32 +99,27 @@ window.executarLogin = async function() {
     if (loginInput === "admin@ogroteam.com" && senhaInput === "123") {
         session.currentUser = { nome: "Mestre Ogro", email: "admin@ogroteam.com", nivel: "Mestre" };
         await registrarLogFirestore(`Admin [Mestre]`, "Login", "Entrou no sistema");
-        window.navegarPara(3);
+        window.firebaseNavegar(3);
         return;
     }
 
     if (loginInput === "apoio@ogroteam.com" && senhaInput === "123") {
         session.currentUser = { nome: "Apoio 1", email: "apoio@ogroteam.com", nivel: "Apoio Administrativo" };
         await registrarLogFirestore(`Admin [Apoio]`, "Login", "Entrou no sistema");
-        window.navegarPara(3);
+        window.firebaseNavegar(3);
         return;
     }
 
     const aluno = session.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
     if (aluno) {
         session.currentUser = { ...aluno, nivel: "Aluno" };
-        window.navegarPara(12);
+        window.firebaseNavegar(12);
         return;
     }
-    alert("Credenciais incorretas ou banco ainda sincronizando.");
+    alert("Credenciais incorretas ou dados não encontrados.");
 };
 
-window.alternarSenha = function() {
-    const input = document.getElementById('login-senha');
-    input.type = input.type === 'password' ? 'text' : 'password';
-};
-
-window.salvarAluno = async function() {
+window.firebaseSalvarAluno = async function() {
     const nome = document.getElementById('cad-aluno-nome').value;
     const whatsapp = document.getElementById('cad-aluno-whatsapp').value;
     const perfil = document.getElementById('cad-aluno-perfil').value;
@@ -147,10 +142,10 @@ window.salvarAluno = async function() {
     window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
 
     alert("Aluno salvo no Firestore!");
-    window.navegarPara(3);
+    window.firebaseNavegar(3);
 };
 
-window.salvarCT = async function() {
+window.firebaseSalvarCT = async function() {
     const nome = document.getElementById('cad-ct-nome').value;
     const payload = {
         nome,
@@ -160,17 +155,17 @@ window.salvarCT = async function() {
     };
     await addDoc(collection(db, "cts"), payload);
     alert("CT Adicionado!");
-    window.navegarPara(3);
+    window.firebaseNavegar(3);
 };
 
-window.confirmarPresencaManual = async function() {
+window.firebasePresencaManual = async function() {
     const id = document.getElementById('presenca-aluno').value;
     if(id) await processarEntradaCatracaQR(id);
 };
 
-window.desconectarConta = function() {
+window.firebaseLogoff = function() {
     session.currentUser = null;
-    window.navegarPara(1);
+    window.firebaseNavegar(1);
 };
 
 // ========================================================
@@ -225,7 +220,7 @@ async function processarEntradaCatracaQR(idAlunoConfirmado) {
 
     await registrarLogFirestore("Catraca QR", "Entrada Atleta", `${aluno.nome} entrou.`);
     alert(`🥊 BEM-VINDO(A) ${aluno.nome}!`);
-    window.navegarPara(3);
+    window.firebaseNavegar(3);
 }
 
 function renderizarCarteirinhaAluno() {
