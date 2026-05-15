@@ -1,3 +1,6 @@
+/* ==========================================
+   RESET E CONFIGURAÇÕES GERAIS (OGRO TEAM)
+   ========================================== */
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +9,7 @@
 }
 
 body {
-    background-color: #020202;
+    background-color: #020202; /* Fundo imersivo escuro */
     color: #ffffff;
     display: flex;
     justify-content: center;
@@ -15,19 +18,21 @@ body {
     padding: 10px;
 }
 
+/* Container do App simulando Octógono/Arena */
 .app-container {
     width: 100%;
     max-width: 480px;
-    background-color: #0a0a0a;
+    background-color: #0a0a0a; /* Preto puro */
     min-height: 95vh;
     border-radius: 12px;
-    border: 2px solid #ba0f14;
+    border: 2px solid #ba0f14; /* Borda vermelha marcante */
     box-shadow: 0 0 25px rgba(186, 15, 20, 0.4);
     overflow: hidden;
     position: relative;
     padding-bottom: 70px;
 }
 
+/* Controle de Exibição das Páginas */
 .page {
     display: none;
     padding: 20px;
@@ -43,6 +48,7 @@ body {
     to { opacity: 1; transform: scale(1); }
 }
 
+/* Estilização da Logo Oficial */
 .brand-header {
     text-align: center;
     padding: 20px 10px;
@@ -91,6 +97,9 @@ p.subtitle {
     margin-bottom: 15px;
 }
 
+/* ==========================================
+   FORMULÁRIOS BRUTAIS (PRETO E VERMELHO)
+   ========================================== */
 .form-group {
     margin-bottom: 16px;
 }
@@ -111,8 +120,8 @@ input[type="number"],
 select {
     width: 100%;
     padding: 14px;
-    background-color: #121212;
-    border: 1px solid #262626;
+    background-color: #121212; /* Grafite escuro */
+    border: 1px solid #262626; /* Cinza grade */
     border-radius: 6px;
     color: #ffffff;
     font-size: 15px;
@@ -121,7 +130,7 @@ select {
 }
 
 input:focus, select:focus {
-    border-color: #ba0f14;
+    border-color: #ba0f14; /* Foco acende no vermelho oficial */
     box-shadow: 0 0 10px rgba(186, 15, 20, 0.4);
 }
 
@@ -137,6 +146,9 @@ input:focus, select:focus {
     cursor: pointer;
 }
 
+/* ==========================================
+   BOTÕES DE COMBATE
+   ========================================== */
 .btn {
     width: 100%;
     padding: 14px;
@@ -151,7 +163,7 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-    background-color: #ba0f14;
+    background-color: #ba0f14; /* Vermelho Ogro Team */
     color: #ffffff;
 }
 
@@ -184,6 +196,9 @@ input:focus, select:focus {
     cursor: pointer;
 }
 
+/* ==========================================
+   CARDS DE COMANDO EM GRADE
+   ========================================== */
 .grid-menu {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -224,6 +239,9 @@ input:focus, select:focus {
     color: #8a8a8a;
 }
 
+/* ==========================================
+   MÓDULO DE FOTO
+   ========================================== */
 .photo-upload-container {
     display: flex;
     justify-content: center;
@@ -244,6 +262,9 @@ input:focus, select:focus {
     color: #8a8a8a;
 }
 
+/* ==========================================
+   DASHBOARDS E MÉTRICAS
+   ========================================== */
 .metrics-top-panel {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -282,6 +303,9 @@ input:focus, select:focus {
 .status-pago { background-color: rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; color: #4ade80; }
 .status-atraso { background-color: rgba(186, 15, 20, 0.1); border: 1px solid #ba0f14; color: #ef4444; }
 
+/* ==========================================
+   LISTAGENS E REGISTROS REATIVOS
+   ========================================== */
 .list-container {
     background-color: #121212;
     border-radius: 6px;
@@ -317,6 +341,9 @@ input:focus, select:focus {
     border-radius: 12px;
 }
 
+/* ==========================================
+   CRONOGRAMA DE AUDITORIA TIMELINE
+   ========================================== */
 .timeline {
     border-left: 2px solid #ba0f14;
     padding-left: 12px;
@@ -331,7 +358,11 @@ input:focus, select:focus {
 
 .timeline-item .meta { color: #8a8a8a; }
 
+/* ==========================================
+   RODAPÉ GLOBAL PROTEGIDO (TRAVADO)
+   ========================================== */
 .footer-fixo {
+    display: none; /* Mantém escondido por padrão na tela de login */
     position: absolute;
     bottom: 0;
     left: 0;
@@ -339,9 +370,14 @@ input:focus, select:focus {
     height: 60px;
     background-color: #0a0a0a;
     border-top: 1px solid #262626;
-    display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 100;
+}
+
+/* Classe de segurança ativada exclusivamente via script.js para administradores */
+.footer-fixo.show-footer {
+    display: flex;
 }
 
 .footer-fixo .btn-footer {
