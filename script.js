@@ -24,23 +24,41 @@ let state = {
 };
 
 // ==========================================
-// CONTROLE DE NAVEGAÇÃO E REGRAS DE ACESSO
+// CONTROLE DE NAVEGAÇÃO E TRAVAS DE SEGURANÇA
 // ==========================================
 function navegarPara(idPagina) {
-    // Bloqueio de segurança para a Página 13 (Apenas Mestre/Admin)
+    // 1. Bloqueia acesso a qualquer página interna se o usuário não estiver logado
+    if (idPagina !== 1 && idPagina !== 2 && !state.currentUser) {
+        alert("Acesso Negado: Você precisa fazer login primeiro.");
+        idPagina = 1; 
+    }
+
+    // 2. Bloqueia a Central de Cadastros (Página 9 e 10) e Configurações (Página 13) para Alunos Comuns
+    if ((idPagina === 9 || idPagina === 10 || idPagina === 13) && state.currentUser && state.currentUser.nivel === "Aluno") {
+        alert("Acesso Negado: Seu perfil não possui permissão para ver ou alterar cadastros.");
+        return;
+    }
+
+    // 3. Bloqueio de segurança específico para a Página 13 (Apenas Mestre/Admin)
     if (idPagina === 13 && state.currentUser && state.currentUser.nivel === "Apoio Administrativo") {
         alert("Acesso Negado: Seu perfil de Apoio não possui permissão para esta tela.");
         return;
     }
 
-    // Oculta todas as páginas
+    // Gerencia visibilidade do rodapé baseado no nível do usuário logado
+    const footer = document.querySelector('.footer-fixo');
+    if (state.currentUser && (state.currentUser.nivel === "Mestre" || state.currentUser.nivel === "Apoio Administrativo")) {
+        footer.classList.add('show-footer');
+    } else {
+        footer.classList.remove('show-footer');
+    }
+
+    // Oculta todas as páginas e ativa a correta
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    
-    // Ativa a página desejada
     const paginaAlvo = document.getElementById(`p${idPagina}`);
     if (paginaAlvo) paginaAlvo.classList.add('active');
 
-    // Executa renderizações específicas da página aberta
+    // Executa renderizações específicas
     if (idPagina === 3) renderizarMenu();
     if (idPagina === 6) renderizarDashboard();
     if (idPagina === 7) renderizarAdmins();
@@ -64,7 +82,6 @@ function executarLogin() {
     const loginInput = document.getElementById('login-email').value;
     const senhaInput = document.getElementById('login-senha').value;
 
-    // 1. Procura nos Administradores/Apoio
     const adm = state.admins.find(a => (a.email === loginInput || a.nome === loginInput) && a.senha === senhaInput);
     if (adm) {
         state.currentUser = adm;
@@ -73,7 +90,6 @@ function executarLogin() {
         return;
     }
 
-    // 2. Procura nos Alunos (Usa o nome ou WhatsApp como login)
     const aluno = state.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
     if (aluno) {
         state.currentUser = { ...aluno, nivel: aluno.perfil === "Instrutor" ? "Aluno Instrutor" : "Aluno" };
@@ -81,7 +97,7 @@ function executarLogin() {
         return;
     }
 
-    alert("Credenciais inválidas! Tente admin@ogroteam.com / 123");
+    alert("Credenciais inválidas!");
 }
 
 function alternarSenha() {
@@ -97,7 +113,7 @@ function atualizarSenhaReal() {
     if (adm) {
         adm.senha = nova;
         registrarLog(`Sistema`, "Alteração Credencial", `Senha do administrador ${adm.nome} alterada.`);
-        alert("Senha atualizada com sucesso!");
+        alert("Senha updated com sucesso!");
         navegarPara(1);
         return;
     }
@@ -128,7 +144,7 @@ function previewFoto(event, elementId) {
         preview.style.backgroundImage = `url(${reader.result})`;
         preview.textContent = "";
     }
-    if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+    if(event.target.files) reader.readAsDataURL(event.target.files);
 }
 
 function salvarAluno() {
@@ -185,13 +201,13 @@ function salvarCT() {
 function renderizarDashboard() {
     let faturamento = 0;
     let inadimplentesCount = 0;
-    let recebido = 0;
+    let letPlatformRecebido = 0;
 
     state.alunos.forEach(a => {
         const valorPlano = state.precos[a.perfil] || 0;
         if (a.statusFinanceiro === "Em dia") {
             faturamento += valorPlano;
-            recebido += valorPlano;
+            letPlatformRecebido += valorPlano;
         } else {
             faturamento += valorPlano;
             inadimplentesCount += valorPlano;
@@ -200,7 +216,7 @@ function renderizarDashboard() {
 
     document.getElementById('dash-faturamento').textContent = `R$ ${faturamento.toFixed(2)}`;
     document.getElementById('dash-inadimplencia').textContent = `R$ ${inadimplentesCount.toFixed(2)}`;
-    document.getElementById('dash-recebido').textContent = `R$ ${recebido.toFixed(2)}`;
+    document.getElementById('dash-recebido').textContent = `R$ ${letPlatformRecebido.toFixed(2)}`;
 
     const listaDevedores = document.getElementById('dash-lista-devedores');
     listaDevedores.innerHTML = "";
@@ -233,7 +249,7 @@ function renderizarAdmins() {
             <span>${a.nome} (${a.perfil})</span>
             <div>
                 <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="promoverUsuario(${a.id}, 'Administrador Integral')">Promover Admin</button>
-                <button class="btn btn-accent" style="padding:4px 8px; font-size:12px; background:#6b7280;" onclick="promoverUsuario(${a.id}, 'Apoio Administrative')">Promover Apoio</button>
+                <button class="btn btn-accent" style="padding:4px 8px; font-size:12px; background:#6b7280;" onclick="promoverUsuario(${a.id}, 'Apoio Administrativo')">Promover Apoio</button>
             </div>
         `;
         container.appendChild(div);
@@ -267,7 +283,7 @@ function promoverUsuario(alunoId, nivelAlvo) {
     });
 
     registrarLog(`Admin [${state.currentUser?.nivel || 'Mestre'}]`, "Privilégio Alterado", `Promoveu ${aluno.nome} para ${nivelAlvo} 🛡️.`);
-    alert(`${aluno.nome} agora possui acesso administrativo de ${nivelAlvo}!`);
+    alert(`${aluno.nome} agora possui acesso administrative de ${nivelAlvo}!`);
 }
 
 // ==========================================
@@ -284,6 +300,9 @@ function renderizarPresenca() {
     state.cts.forEach(c => selectCT.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
 }
 
+// ==========================================
+// CONFIRMAR PRESENÇA E CADASTROS
+// ==========================================
 function confirmarPresenca() {
     const idAluno = document.getElementById('presenca-aluno').value;
     const idCT = document.getElementById('presenca-ct').value;
@@ -305,15 +324,11 @@ function confirmarPresenca() {
     alert(`Frequência registrada com sucesso para ${aluno.nome}!`);
 }
 
-// ==========================================
-// PÁGINA 9 & 10: CENTRAL DE REGISTROS E EDIÇÃO
-// ==========================================
 function renderizarCadastros() {
     const busca = document.getElementById('pesquisa-reativa').value.toLowerCase();
     const container = document.getElementById('lista-sincronizada');
     container.innerHTML = "";
 
-    // Renderizar Alunos Encontrados
     state.alunos.filter(a => a.nome.toLowerCase().includes(busca)).forEach(a => {
         const div = document.createElement('div');
         div.className = "item-registro";
@@ -330,7 +345,6 @@ function renderizarCadastros() {
         container.appendChild(div);
     });
 
-    // Renderizar CTs Encontrados
     state.cts.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
         const div = document.createElement('div');
         div.className = "item-registro";
@@ -403,9 +417,7 @@ function salvarAlteracoesDedicadas() {
 // ==========================================
 // PÁGINA 11: RELATÓRIOS
 // ==========================================
-function renderizarRelatorios() {
-    // Inicializa filtros padrões
-}
+function renderizarRelatorios() {}
 
 function processarFiltroRelatorio() {
     const cat = document.getElementById('rep-categoria').value;
@@ -484,7 +496,6 @@ function renderizarConfiguracoes() {
 function salvarTabelaPrecos() {
     const cAntigo = state.precos.Comercial;
     const aAntigo = state.precos.Atleta;
-    const iAntigo = state.precos.Instrutor;
 
     state.precos.Comercial = parseFloat(document.getElementById('conf-preco-comercial').value) || 0;
     state.precos.Atleta = parseFloat(document.getElementById('conf-preco-atleta').value) || 0;
