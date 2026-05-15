@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ogro Team - Sistema de Gestão</title>
     <link rel="stylesheet" href="style.css">
+    <!-- QR Code Script Library -->
+    <script src="https://cloudflare.com"></script>
+    <script src="https://unpkg.com"></script>
 </head>
 <body>
     <div class="app-container">
@@ -44,7 +47,7 @@
                 <label>Nova Senha</label>
                 <input type="password" id="recup-nova" placeholder="Nova Senha">
             </div>
-            <button class="btn btn-primary" onclick="atualizarSenhaReal()">Atualizar Senha em Tempo Real</button>
+            <button class="btn btn-primary" onclick="atualizarSenhaReal()">Atualizar Senha</button>
             <span class="text-link" onclick="navegarPara(1)">← Voltar para o Login</span>
         </div>
 
@@ -52,40 +55,39 @@
         <div id="p3" class="page">
             <h2>Painel de Gestão</h2>
             <p class="subtitle">Controle Operacional e Administrativo</p>
-            
             <div class="grid-menu">
                 <div class="card-premium" onclick="navegarPara(4)">
-                    <div class="card-icon icon-azul">👤</div>
+                    <div class="card-icon">👤</div>
                     <div class="card-title">Incluir Aluno</div>
                     <div class="card-subtext">Cadastro Premium</div>
                 </div>
                 <div class="card-premium" onclick="navegarPara(5)">
-                    <div class="card-icon icon-cinza">🏛️</div>
+                    <div class="card-icon">🏛️</div>
                     <div class="card-title">Incluir CT</div>
                     <div class="card-subtext">Gerencie filiais</div>
                 </div>
                 <div class="card-premium" onclick="navegarPara(6)">
-                    <div class="card-icon icon-vermelho">📈</div>
+                    <div class="card-icon">📈</div>
                     <div class="card-title">Dashboard</div>
                     <div class="card-subtext">Resultados e metas</div>
                 </div>
                 <div class="card-premium" onclick="navegarPara(7)">
-                    <div class="card-icon icon-azul">👥</div>
+                    <div class="card-icon">👥</div>
                     <div class="card-title">Equipe</div>
                     <div class="card-subtext">Controle acessos</div>
                 </div>
                 <div class="card-premium" onclick="navegarPara(8)">
-                    <div class="card-icon icon-verde">⏱️</div>
-                    <div class="card-title">Presença</div>
-                    <div class="card-subtext">Chamada e Histórico</div>
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-title">Presença / QR</div>
+                    <div class="card-subtext">Chamada e Catraca</div>
                 </div>
                 <div class="card-premium" onclick="navegarPara(11)">
-                    <div class="card-icon icon-roxo">📊</div>
+                    <div class="card-icon">📊</div>
                     <div class="card-title">Relatórios</div>
                     <div class="card-subtext">Exportar filtros</div>
                 </div>
                 <div id="card-config" class="card-premium" onclick="navegarPara(13)">
-                    <div class="card-icon icon-amarelo">⚙️</div>
+                    <div class="card-icon">⚙️</div>
                     <div class="card-title">Configurações</div>
                     <div class="card-subtext">Preços e Auditoria</div>
                 </div>
@@ -96,18 +98,8 @@
         <!-- PÁGINA 4: CADASTRO PREMIUM DE ALUNO -->
         <div id="p4" class="page">
             <h2>Cadastro de Aluno</h2>
-            <div class="photo-upload-container">
-                <label for="foto-upload" id="aluno-foto-preview" class="avatar-placeholder">Toque para Foto</label>
-                <input type="file" id="foto-upload" accept="image/*" style="display:none;" onchange="previewFoto(event, 'aluno-foto-preview')">
-            </div>
-            <div class="form-group">
-                <label>Nome Completo</label>
-                <input type="text" id="cad-aluno-nome">
-            </div>
-            <div class="form-group">
-                <label>WhatsApp</label>
-                <input type="text" id="cad-aluno-whatsapp" placeholder="(XX) XXXXX-XXXX">
-            </div>
+            <div class="form-group"><label>Nome Completo</label><input type="text" id="cad-aluno-nome"></div>
+            <div class="form-group"><label>WhatsApp</label><input type="text" id="cad-aluno-whatsapp" placeholder="Ex: 21999998888"></div>
             <div class="form-group">
                 <label>Plano</label>
                 <select id="cad-aluno-plano">
@@ -118,7 +110,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Status Financeiro Inicial</label>
+                <label>Status Financeiro</label>
                 <select id="cad-aluno-status">
                     <option value="Em dia">Em dia</option>
                     <option value="Inadimplente">Inadimplente</option>
@@ -134,7 +126,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Modalidade Principal</label>
+                <label>Modalidade</label>
                 <select id="cad-aluno-modalidade">
                     <option value="Muay Thai">Muay Thai</option>
                     <option value="Boxe">Boxe</option>
@@ -142,18 +134,16 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Nível / Graduação</label>
+                <label>Graduação</label>
                 <select id="cad-aluno-graduacao">
-                    <option value="Branco">Branco (Muay Thai)</option>
-                    <option value="Vermelho">Vermelho (Muay Thai)</option>
-                    <option value="Preta (Instrutor)">Preta Instrutor (Muay Thai)</option>
-                    <option value="Classe D (Iniciante)">Classe D (Boxe)</option>
-                    <option value="Classe A (Elite)">Classe A (Boxe)</option>
-                    <option value="Faixa Branca">Faixa Branca (MMA)</option>
-                    <option value="Faixa Preta">Faixa Preta (MMA)</option>
+                    <option value="Branco">Branco</option>
+                    <option value="Vermelho">Vermelho</option>
+                    <option value="Preta (Instrutor)">Preta (Instrutor)</option>
+                    <option value="Classe D (Iniciante)">Classe D (Iniciante)</option>
+                    <option value="Faixa Branca">Faixa Branca</option>
                 </select>
             </div>
-            <button class="btn btn-primary" onclick="salvarAluno()">Salvar e Emitir Acesso</button>
+            <button class="btn btn-primary" onclick="salvarAluno()">Salvar no Banco e Disparar Whats</button>
             <button class="btn btn-accent" onclick="navegarPara(3)">Cancelar</button>
         </div>
 
@@ -161,29 +151,24 @@
         <div id="p5" class="page">
             <h2>Registrar Academia / CT</h2>
             <div class="form-group"><label>Nome da Filial</label><input type="text" id="cad-ct-nome"></div>
-            <div class="form-group"><label>CNPJ / Registro</label><input type="text" id="cad-ct-cnpj"></div>
+            <div class="form-group"><label>CNPJ</label><input type="text" id="cad-ct-cnpj"></div>
             <div class="form-group"><label>Responsável</label><input type="text" id="cad-ct-responsavel"></div>
-            <div class="form-group"><label>Endereço Completo</label><input type="text" id="cad-ct-endereco"></div>
-            <div class="form-group"><label>Cidade / Estado</label><input type="text" id="cad-ct-cidade"></div>
             <div class="form-group"><label>WhatsApp Comercial</label><input type="text" id="cad-ct-whatsapp"></div>
-            <div class="form-group"><label>Capacidade por Horário</label><input type="number" id="cad-ct-capacidade"></div>
-            <div class="form-group"><label>Mensalidade Padrão</label><input type="number" id="cad-ct-mensalidade"></div>
             <button class="btn btn-primary" onclick="salvarCT()">Registrar Unidade</button>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
         <!-- PÁGINA 6: DASHBOARD FINANCEIRO -->
         <div id="p6" class="page">
-            <h2>Dashboard Financeiro</h2>
+            <h2>Dashboard Financeiro Real</h2>
             <div class="metrics-top-panel">
                 <div class="metric-box"><label>Faturamento</label><span id="dash-faturamento" class="text-success">R$ 0,00</span></div>
                 <div class="metric-box"><label>Inadimplência</label><span id="dash-inadimplencia" class="text-danger">R$ 0,00</span></div>
                 <div class="metric-box"><label>Recebido</label><span id="dash-recebido" style="color:white;">R$ 0,00</span></div>
             </div>
-            <h3>Módulo de Inadimplência Automatizado</h3>
+            <h3>Módulo de Cobrança Instantânea</h3>
             <div id="dash-lista-devedores" class="list-container"></div>
-            <button class="btn btn-accent" onclick="alert('Relatório Processado em Tempo Real!')">Fluxo de Caixa Mensal</button>
-            <button class="btn btn-accent" onclick="navekarPara(3)">Voltar</button>
+            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
         <!-- PÁGINA 7: GESTÃO DE EQUIPE -->
@@ -200,72 +185,39 @@
                 </select>
             </div>
             <button class="btn btn-primary" onclick="salvarNovoAdmin()">Atribuir Novo Gestor</button>
-            <h3 style="margin-top:20px;">Promover Aluno Existente</h3>
-            <div id="lista-promocao-alunos" class="list-container"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
-        <!-- PÁGINA 8: FREQUÊNCIA / CHAMADAS -->
+        <!-- PÁGINA 8: FREQUÊNCIA E CATRACA QR -->
         <div id="p8" class="page">
-            <h2>Painel de Presença</h2>
+            <h2>⏱️ Presença e Catraca Virtual</h2>
+            <h3>Escanear QR Code do Aluno</h3>
+            <div id="reader" style="width: 100%; max-width: 350px; margin: 0 auto; border: 1px solid #ba0f14; border-radius: 8px;"></div>
+            <div style="margin: 15px 0; text-align: center;">-- OU LANÇAMENTO MANUAL --</div>
             <div class="form-group"><label>Selecione o Aluno</label><select id="presenca-aluno"></select></div>
-            <div class="form-group"><label>Selecione a Unidade / CT</label><select id="presenca-ct"></select></div>
-            <button class="btn btn-primary" onclick="confirmarPresenca()">Confirmar Presença ✔️</button>
-            <h3 style="margin-top:20px;">Mural de Frequência Recente</h3>
+            <button class="btn btn-primary" onclick="confirmarPresencaManual()">Confirmar Entrada Manual ✔️</button>
+            <h3 style="margin-top:20px;">Mural de Entrada da Arena</h3>
             <div id="mural-chamadas" class="list-container"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
         <!-- PÁGINA 9: CENTRAL DE REGISTROS -->
         <div id="p9" class="page">
-            <h2>Central de Registros</h2>
+            <h2>Central de Registros Sincronizados</h2>
             <input type="text" id="pesquisa-reativa" placeholder="🔍 Buscar aluno, CT ou admin..." oninput="renderizarCadastros()" style="margin-bottom:15px;">
             <div id="lista-sincronizada" class="list-container" style="max-height:400px;"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
-        <!-- PÁGINA 10: TELA DE EDIÇÃO DEDICADA -->
-        <div id="p10" class="page">
-            <h2>Editar Registro</h2>
-            <div class="photo-upload-container">
-                <label for="edit-foto-upload" id="edit-foto-preview" class="avatar-placeholder">Foto</label>
-                <input type="file" id="edit-foto-upload" accept="image/*" style="display:none;" onchange="previewFoto(event, 'edit-foto-preview')">
-            </div>
-            <div class="form-group"><label>Nome Completo</label><input type="text" id="edit-nome"></div>
-            <div class="form-group"><label>Plano</label><input type="text" id="edit-plano"></div>
-            <div class="form-group"><label>Modalidade</label><input type="text" id="edit-modalidade"></div>
-            <div class="form-group"><label>Graduação</label><input type="text" id="edit-graduacao"></div>
-            <button class="btn btn-primary" onclick="salvarAlteracoesDedicadas()">Salvar Alterações</button>
-            <button class="btn btn-accent" onclick="navegarPara(9)">Cancelar</button>
-        </div>
-
-        <!-- PÁGINA 11: RELATÓRIOS AVANÇADOS -->
+        <!-- PÁGINA 11: RELATÓRIOS -->
         <div id="p11" class="page">
             <h2>Filtro de Relatórios</h2>
-            <div class="form-group">
-                <label>Categoria de Aluno</label>
-                <select id="rep-categoria">
-                    <option value="Todos">Todos</option>
-                    <option value="Comercial">Comercial</option>
-                    <option value="Atleta">Atleta</option>
-                    <option value="Bolsista">Bolsista</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Modalidade</label>
-                <select id="rep-modalidade">
-                    <option value="Todas">Todas</option>
-                    <option value="Muay Thai">Muay Thai</option>
-                    <option value="Boxe">Boxe</option>
-                    <option value="MMA">MMA</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" onclick="processarFiltroRelatorio()">Gerar Relatório na Tela</button>
+            <button class="btn btn-primary" onclick="processarFiltroRelatorio()">Processar Registros em Tela</button>
             <div id="relatorio-resultado-tela" class="list-container" style="margin-top:15px;"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
-        <!-- PÁGINA 12: ÁREA EXCLUSIVA DO ALUNO -->
+        <!-- PÁGINA 12: ÁREA EXCLUSIVA DO ALUNO (COM GERADOR QR) -->
         <div id="p12" class="page">
             <div class="brand-header">
                 <div class="tag-aluno-header" id="aluno-tag-perfil">[PERFIL]</div>
@@ -273,38 +225,42 @@
                 <p id="aluno-tag-graduacao" style="color:#ba0f14; font-weight:bold;">Modalidade - Graduação</p>
             </div>
             <div id="aluno-status-financeiro" class="status-box"></div>
-            <div class="metrics-top-panel" style="grid-template-columns: 1fr; margin-top:10px;">
+            
+            <!-- Caixa do QR Code da Carteirinha -->
+            <div style="background: white; padding: 15px; border-radius: 8px; width: fit-content; margin: 15px auto; display: flex; justify-content: center;">
+                <div id="qrcode-carteirinha"></div>
+            </div>
+            <p style="text-align:center; font-size:11px; color:#8a8a8a; margin-bottom:15px;">Apresente este QR Code na entrada da academia</p>
+
+            <div class="metrics-top-panel" style="grid-template-columns: 1fr;">
                 <div class="metric-box">
-                    <label>Frequência Mensal</label>
-                    <span id="aluno-contador-freq" style="font-size:24px; color:#ba0f14;">0</span> Presenças
+                    <label>Frequência Acumulada</label>
+                    <span id="aluno-contador-freq" style="font-size:24px; color:#ba0f14;">0</span> Aulas
                 </div>
             </div>
-            <h3 style="margin-top:15px;">Histórico de Aulas</h3>
-            <div id="aluno-historico-aulas" class="list-container"></div>
             <button class="btn btn-accent" onclick="desconectarConta()">Sair da Conta</button>
         </div>
 
-        <!-- PÁGINA 13: CONFIGURAÇÕES, MENSALIDADES E AUDITORIA -->
+        <!-- PÁGINA 13: CONFIGURAÇÕES E AUDITORIA -->
         <div id="p13" class="page">
-            <h2>Configurações do Sistema</h2>
-            <h3>Módulo A: Valores de Mensalidade por Perfil</h3>
-            <div class="form-group"><label>Mensalidade Aluno Comercial (R$)</label><input type="number" id="conf-preco-comercial"></div>
-            <div class="form-group"><label>Mensalidade Aluno Atleta (R$)</label><input type="number" id="conf-preco-atleta"></div>
-            <div class="form-group"><label>Mensalidade Aluno Bolsista (R$)</label><input type="number" id="conf-preco-bolsista" disabled></div>
-            <div class="form-group"><label>Mensalidade Aluno Instrutor (R$)</label><input type="number" id="conf-preco-instrutor"></div>
-            <button class="btn btn-primary" onclick="salvarTabelaPrecos()">Salvar Nova Tabela de Preços</button>
-            
-            <h3 style="margin-top:25px;">Módulo B: Histórico de Auditoria Digital</h3>
+            <h2>Configurações e Rastreamento</h2>
+            <div class="form-group"><label>Mensalidade Comercial (R$)</label><input type="number" id="conf-preco-comercial"></div>
+            <div class="form-group"><label>Mensalidade Atleta (R$)</label><input type="number" id="conf-preco-atleta"></div>
+            <div class="form-group"><label>Mensalidade Instrutor (R$)</label><input type="number" id="conf-preco-instrutor"></div>
+            <button class="btn btn-primary" onclick="salvarTabelaPrecos()">Atualizar Preços</button>
+            <h3 style="margin-top:25px;">Rastro Imutável de Auditoria</h3>
             <div id="timeline-auditoria" class="timeline"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)" style="margin-top:15px;">← Voltar</button>
         </div>
 
         <!-- RODAPÉ FIXO GLOBAL -->
         <div class="footer-fixo">
-            <button class="btn-footer" onclick="navegarPara(9)">🗂️ Cadastros</button>
+            <button class="btn-footer" onclick="navegarPara(9)">🗂️ Central de Cadastros</button>
         </div>
 
     </div>
-    <script src="script.js"></script>
+
+    <!-- CONEXÃO MODULAR FIREBASE VIA BROWSER -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>
