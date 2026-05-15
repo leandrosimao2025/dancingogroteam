@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ogro Team - Sistema de Gestão</title>
+    <!-- Tailwind CSS para Estilização Rápida e Premium -->
+    <script src="https://tailwindcss.com"></script>
+    <!-- Ícones Lucide para os Cards e Menus -->
+    <script src="https://unpkg.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#060913] text-gray-100 font-sans antialiased min-h-screen">
+
+    <!-- CONTAINER GLOBAL DO APLICATIVO -->
+    <div id="app-container" class="max-w-md mx-auto min-h-screen flex flex-col relative pb-20 shadow-2xl bg-[#0b0f19]">
+        
+        <!-- PÁGINA 1: TELA DE LOGIN -->
+        <section id="page-1" class="page-view p-6 flex flex-col justify-center flex-grow">
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-[#dc2626] rounded-full mx-auto flex items-center justify-center mb-3 shadow-lg border border-red-500">
+                    <span class="text-xl font-black text-white tracking-wider">OGRO</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">OGRO TEAM</h1>
+                <p class="text-xs text-gray-400 mt-1">Acesso Unificado ao Sistema</p>
+            </div>
+            <form id="login-form" class="space-y-4" onsubmit="event.preventDefault(); handleLogin();">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">E-mail ou WhatsApp</label>
+                    <input type="text" id="login-user" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626] transition-colors" placeholder="user@ogroteam.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Senha</label>
+                    <div class="relative">
+                        <input type="password" id="login-pass" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626] transition-colors" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility('login-pass')" class="absolute right-3 top-3.5 text-gray-400 hover:text-white">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm uppercase tracking-wider mt-2 shadow-md">Entrar</button>
+                <div class="text-center mt-4">
+                    <button type="button" onclick="navigateTo('page-2')" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">Esqueceu a Senha?</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- PÁGINA 2: RECUPERAÇÃO DE SENHA -->
+        <section id="page-2" class="page-view p-6 hidden flex-col justify-center flex-grow">
+            <h2 class="text-xl font-bold text-white mb-2">Recuperar Acesso</h2>
+            <p class="text-xs text-gray-400 mb-6">Altere suas credenciais de acesso em tempo real.</p>
+            <form class="space-y-4" onsubmit="event.preventDefault(); handlePasswordRecovery();">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">E-mail ou WhatsApp Cadastrado</label>
+                    <input type="text" id="recover-user" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Nova Senha</label>
+                    <input type="password" id="recover-new-pass" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Confirmar Nova Senha</label>
+                    <input type="password" id="recover-confirm-pass" required class="w-full bg-[#111827] border border-gray-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#dc2626]">
+                </div>
+                <button type="submit" class="w-full bg-[#dc2626] hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm uppercase tracking-wider">Atualizar Senha</button>
+                <button type="button" onclick="navigateTo('page-1')" class="w-full bg-transparent border border-gray-700 text-gray-400 py-2 rounded-lg text-xs mt-2">Voltar ao Login</button>
+            </form>
+        </section>
+
+        <!-- PÁGINA 3: PAINEL CENTRAL DE GESTÃO -->
+        <section id="page-3" class="page-view p-5 hidden flex-col flex-grow">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <span id="user-badge" class="text-[10px] bg-red-900/50 border border-red-700 text-red-400 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Mestre</span>
+                    <h2 class="text-lg font-bold text-white mt-1">Painel Administrativo</h2>
+                </div>
+                <button onclick="logout()" class="text-xs text-gray-500 hover:text-red-400">Sair</button>
+            </div>
+            <!-- Grid de Cards Premium (Adaptado para mobile) -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div onclick="navigateTo('page-4')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-blue-500 cursor-pointer transition-all shadow-md">
+                    <div class="w-8 h-8 rounded-lg bg-blue-900/30 flex items-center justify-center text-blue-400 mb-2"><i data-lucide="user-plus"></i></div>
+                    <h3 class="text-sm font-bold text-white">Incluir Aluno</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Cadastro Premium</p>
+                </div>
+                <div onclick="navigateTo('page-5')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-gray-500 cursor-pointer transition-all shadow-md">
+                    <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-gray-300 mb-2"><i data-lucide="building"></i></div>
+                    <h3 class="text-sm font-bold text-white">Incluir Unidades</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Gerencie filiais</p>
+                </div>
+                <div onclick="checkPermissionAndNavigate('page-6')" id="card-metrics" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-red-500 cursor-pointer transition-all shadow-md">
+                    <div class="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center text-red-400 mb-2"><i data-lucide="trending-up"></i></div>
+                    <h3 class="text-sm font-bold text-white">Dashboard</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Resultados e metas</p>
+                </div>
+                <div onclick="checkPermissionAndNavigate('page-7')" id="card-team" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-blue-400 cursor-pointer transition-all shadow-md">
+                    <div class="w-8 h-8 rounded-lg bg-blue-900/20 flex items-center justify-center text-blue-300 mb-2"><i data-lucide="users"></i></div>
+                    <h3 class="text-sm font-bold text-white">Equipe</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Controle de acessos</p>
+                </div>
+                <div onclick="navigateTo('page-8')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-green-500 cursor-pointer transition-all shadow-md">
+                    <div class="w-8 h-8 rounded-lg bg-green-900/30 flex items-center justify-center text-green-400 mb-2"><i data-lucide="calendar-check"></i></div>
+                    <h3 class="text-sm font-bold text-white">Frequência</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Chamada e Histórico</p>
+                </div>
+                <div onclick="navigateTo('page-11')" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-purple-500 cursor-pointer transition-all shadow-md">
+                    <div class="w-8 h-8 rounded-lg bg-purple-900/30 flex items-center justify-center text-purple-400 mb-2"><i data-lucide="file-text"></i></div>
+                    <h3 class="text-sm font-bold text-white">Relatórios</h3>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Exportar filtros</p>
+                </div>
+                <div onclick="checkPermissionAndNavigate('page-13')" id="card-config" class="bg-[#111827] p-4 rounded-xl border border-gray-800 hover:border-yellow-500 cursor-pointer transition-all shadow-md col-span-2">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-lg bg-yellow-900/30 flex items-center justify-center text-yellow-400"><i data-lucide="settings"></i></div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Tabela de Preços & Logs</h3>
+                            <p class="text-[10px] text-gray-400">Valores por perfil e auditoria</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PÁGINA 4: CADASTRO PREMIUM DE ALUNO -->
+        <section id="page-4" class="page-view p-5 hidden flex-col flex-grow">
+            <h2 class="text-lg font-bold text-white mb-4">Cadastro Premium de Aluno</h2>
+            <form class="space-y-4 mb-6" onsubmit="event.preventDefault(); handleRegisterStudent();">
+                <div class="flex items-center space-x-4 bg-[#111827] p-3 rounded-lg border border-gray-800">
+                    <div class="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center relative overflow-hidden bg-gray-800">
+                        <input type="file" id="student-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImage(this, 'student-photo-preview')">
+                        <img id="student-photo-preview" class="w-full h-full object-cover hidden">
+                        <span id="photo-placeholder" class="text-[10px] text-gray-400 text-center px-1">Upload Foto</span>
+                    </div>
+                    <p class="text-xs text-gray-400">Toque no círculo para carregar a foto do aluno.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Nome Completo</label>
+                    <input type="text" id="student-name" required class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#dc2626]">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">WhatsApp</label>
+                    <input type="text" id="student-whatsapp" required placeholder="(XX) XXXXX-XXXX" oninput="maskWhatsApp(this)" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#dc2626]">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Plano Contratado</label>
+                        <select id="student-plan" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
+                            <option value="Mensal">Mensal</option>
+                            <option value="Trimestral">Trimestral</option>
+                            <option value="Semestral">Semestral</option>
+                            <option value="Anual">Anual</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Status Financeiro</label>
+                        <select id="student-status" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
+                            <option value="Em dia">Em dia</option>
+                            <option value="Inadimplente">Inadimplente</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Dropdown de Perfil</label>
+                    <select id="student-profile" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
+                        <option value="Aluno Comercial">Aluno Comercial</option>
+                        <option value="Aluno Atleta">Aluno Atleta</option>
+                        <option value="Aluno Bolsista">Aluno Bolsista</option>
+                        <option value="Aluno Instrutor">Aluno Instrutor</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Modalidade</label>
+                        <select id="student-modality" onchange="updateGraduationDropdown(this.value, 'student-graduation')" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none">
+                            <option value="Muay Thai">Muay Thai</option>
+                            <option value="Boxe">Boxe</option>
+                            <option value="MMA">MMA</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Graduação</label>
+                        <select id="student-graduation" class="w-full bg-[#111827] border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:outline-none"></select>
+                    </div>
+                </div>
+                <div class="flex space-x-2 pt-2">
+                    <button type="button" onclick="navigateTo('page-3')" class="w-1/3 bg-gray-800 text-gray-300 rounded-lg text-xs font-semibold">Cancelar</button>
+                    <button type="submit" class="w-2/3 bg-[#dc2626] hover:bg-red-700 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-wider">Salvar e Emitir Acesso</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- INCLUSÃO DA PARTE 2: LINK DINÂMICO PARA AS OUTRAS PÁGINAS -->
+        <div id="dynamic-pages-container"></div>
+
+        <!-- RODAPÉ FIXO GLOBAL -->
+        <footer id="global-footer" class="absolute bottom-0 left-0 right-0 h-16 bg-[#111827] border-t border-gray-800 flex items-center justify-center px-6 hidden">
+            <button onclick="navigateTo('page-9')" class="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border border-gray-700">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                <span>Cadastros</span>
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- Carga do Script unificado de lógica -->
+    <script src="app.js"></script>
+</body>
+</html>
