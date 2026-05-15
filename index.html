@@ -5,14 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ogro Team - Sistema de Gestão</title>
     <link rel="stylesheet" href="style.css">
-    <!-- QR Code Script Library -->
+    <!-- Bibliotecas de Terceiros via CDN (QR Code e Leitor de Câmera) -->
     <script src="https://cloudflare.com"></script>
     <script src="https://unpkg.com"></script>
+    
+    <!-- SCRIPT INTERNO DE SEGURANÇA E NAVEGAÇÃO INTERNA -->
+    <script>
+        // Função para alternar a visibilidade da senha (Ícone do Olho)
+        function alternarSenha() {
+            const input = document.getElementById('login-senha');
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
+        // Encaminhadores globais para o módulo Firebase do script.js
+        function executarLogin() {
+            if (typeof window.firebaseLogin === 'function') {
+                window.firebaseLogin();
+            } else {
+                alert("O sistema está sincronizando com o banco de dados. Aguarde 3 segundos e tente novamente.");
+            }
+        }
+
+        function navegarPara(idPagina) {
+            if (typeof window.firebaseNavegar === 'function') {
+                window.firebaseNavegar(idPagina);
+            }
+        }
+
+        function salvarAluno() {
+            if (typeof window.firebaseSalvarAluno === 'function') {
+                window.firebaseSalvarAluno();
+            }
+        }
+
+        function salvarCT() {
+            if (typeof window.firebaseSalvarCT === 'function') {
+                window.firebaseSalvarCT();
+            }
+        }
+
+        function confirmarPresencaManual() {
+            if (typeof window.firebasePresencaManual === 'function') {
+                window.firebasePresencaManual();
+            }
+        }
+
+        function salvarTabelaPrecos() {
+            if (typeof window.firebaseSalvarPrecos === 'function') {
+                window.firebaseSalvarPrecos();
+            }
+        }
+
+        function desconectarConta() {
+            if (typeof window.firebaseLogoff === 'function') {
+                window.firebaseLogoff();
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="app-container">
 
-        <!-- PÁGINA 1: LOGIN -->
+        <!-- PÁGINA 1: TELA DE LOGIN -->
         <div id="p1" class="page active">
             <div class="brand-header">
                 <img src="logo.png" alt="Ogro Team Logo" class="logo-oficial" onerror="this.src='logo.PNG'; this.onerror=function(){this.style.display='none'; document.getElementById('logo-fallback').style.display='inline-flex';}">
@@ -47,7 +105,7 @@
                 <label>Nova Senha</label>
                 <input type="password" id="recup-nova" placeholder="Nova Senha">
             </div>
-            <button class="btn btn-primary" onclick="atualizarSenhaReal()">Atualizar Senha</button>
+            <button class="btn btn-primary" onclick="alert('Funcionalidade em desenvolvimento na nuvem.')">Atualizar Senha</button>
             <span class="text-link" onclick="navegarPara(1)">← Voltar para o Login</span>
         </div>
 
@@ -177,20 +235,12 @@
             <div class="form-group"><label>Nome do Gestor</label><input type="text" id="adm-nome"></div>
             <div class="form-group"><label>E-mail de Acesso</label><input type="email" id="adm-email"></div>
             <div class="form-group"><label>Senha Provisória</label><input type="password" id="adm-senha"></div>
-            <div class="form-group">
-                <label>Nível</label>
-                <select id="adm-nivel">
-                    <option value="Administrador Integral">Administrador Integral</option>
-                    <option value="Apoio Administrativo">Apoio Administrativo</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" onclick="salvarNovoAdmin()">Atribuir Novo Gestor</button>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
         <!-- PÁGINA 8: FREQUÊNCIA E CATRACA QR -->
         <div id="p8" class="page">
-            <h2>⏱️ Presença e Catraca Virtual</h2>
+            <h2>⏱ ... Presença e Catraca Virtual</h2>
             <h3>Escanear QR Code do Aluno</h3>
             <div id="reader" style="width: 100%; max-width: 350px; margin: 0 auto; border: 1px solid #ba0f14; border-radius: 8px;"></div>
             <div style="margin: 15px 0; text-align: center;">-- OU LANÇAMENTO MANUAL --</div>
@@ -204,7 +254,6 @@
         <!-- PÁGINA 9: CENTRAL DE REGISTROS -->
         <div id="p9" class="page">
             <h2>Central de Registros Sincronizados</h2>
-            <input type="text" id="pesquisa-reativa" placeholder="🔍 Buscar aluno, CT ou admin..." oninput="renderizarCadastros()" style="margin-bottom:15px;">
             <div id="lista-sincronizada" class="list-container" style="max-height:400px;"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
@@ -212,12 +261,11 @@
         <!-- PÁGINA 11: RELATÓRIOS -->
         <div id="p11" class="page">
             <h2>Filtro de Relatórios</h2>
-            <button class="btn btn-primary" onclick="processarFiltroRelatorio()">Processar Registros em Tela</button>
             <div id="relatorio-resultado-tela" class="list-container" style="margin-top:15px;"></div>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
-        <!-- PÁGINA 12: ÁREA EXCLUSIVA DO ALUNO (COM GERADOR QR) -->
+        <!-- PÁGINA 12: ÁREA EXCLUSIVA DO ALUNO -->
         <div id="p12" class="page">
             <div class="brand-header">
                 <div class="tag-aluno-header" id="aluno-tag-perfil">[PERFIL]</div>
@@ -226,7 +274,6 @@
             </div>
             <div id="aluno-status-financeiro" class="status-box"></div>
             
-            <!-- Caixa do QR Code da Carteirinha -->
             <div style="background: white; padding: 15px; border-radius: 8px; width: fit-content; margin: 15px auto; display: flex; justify-content: center;">
                 <div id="qrcode-carteirinha"></div>
             </div>
@@ -260,7 +307,7 @@
 
     </div>
 
-    <!-- CONEXÃO MODULAR FIREBASE VIA BROWSER -->
+    <!-- CARREGAMENTO DO BACKEND EM FIREBASE COMO MÓDULO -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
