@@ -103,7 +103,7 @@ window.firebaseLogin = async function() {
     alert("Credenciais incorretas.");
 };
 
-// MAPEAMENTO COMPATÍVEL COMPLETO (SUPORTE MULTINOMES)
+// SALVAMENTO SEGURO SEM BLOQUEIO DE POPUP
 window.firebaseSalvarAluno = async function() {
     const nome = document.getElementById('cad-aluno-nome').value;
     const whatsapp = document.getElementById('cad-aluno-whatsapp').value;
@@ -124,20 +124,24 @@ window.firebaseSalvarAluno = async function() {
         await addDoc(collection(db, "alunos"), payload);
         await registrarLogFirestore("Sistema", "Cadastro Aluno", `Aluno ${nome} salvo.`);
         
-        // Disparo Real de WhatsApp integrado
+        alert("Aluno salvo com sucesso na Nuvem do Firebase!");
+        
+        // CORREÇÃO: Em vez de window.open direto, redireciona o usuário de forma amigável
         const mensagemTexto = encodeURIComponent(`🥋 Olá ${nome}! Seu cadastro no Ogro Team foi concluído. Acesse o aplicativo usando seu nome ou whatsapp com a senha padrão: 123`);
-        window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
-
-        alert("Aluno salvo com sucesso na Nuvem!");
-        await sincronizarComFirebase(); 
-        window.firebaseNavegar(3);
+        const urlWhats = `https://whatsapp.com{whatsapp}&text=${mensagemTexto}`;
+        
+        if (confirm("Deseja abrir o WhatsApp agora para enviar os dados de acesso do aluno?")) {
+            window.location.href = urlWhats; // Abre na mesma aba para burlar bloqueios de celular
+        } else {
+            await sincronizarComFirebase(); 
+            window.firebaseNavegar(3);
+        }
     } catch (e) {
         alert("Erro ao salvar no banco. Verifique as regras do Firestore.");
         console.error(e);
     }
 };
 
-// Vincula a mesma lógica em ambos os nomes para evitar qualquer falha no HTML
 window.salvarAluno = window.firebaseSalvarAluno;
 
 window.firebaseSalvarCT = async function() {
@@ -196,7 +200,7 @@ function renderizarDashboard() {
         const div = document.createElement('div');
         div.className = "item-registro";
         const msgCobranca = encodeURIComponent(`⚠️ Olá ${a.nome}, consta uma pendência em aberto no Ogro Team. Por favor, regularize.`);
-        div.innerHTML = `<span>${a.nome}</span> <button class="btn btn-primary" style="padding:4px; font-size:11px;" onclick="window.open('https://whatsapp.com{a.whatsapp}&text=${msgCobranca}', '_blank')">Cobrar</button>`;
+        div.innerHTML = `<span>${a.nome}</span> <button class="btn btn-primary" style="padding:4px; font-size:11px;" onclick="window.location.href='https://whatsapp.com{a.whatsapp}&text=${msgCobranca}'">Cobrar</button>`;
         lista.appendChild(div);
     });
 }
