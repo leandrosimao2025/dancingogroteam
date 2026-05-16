@@ -1,4 +1,4 @@
-// IMPORTAÇÃO CORRIGIDA VIA CDN INTEGRADO PARA NAVEGADORES
+// IMPORTAÇÃO VIA CDN INTEGRADO PARA NAVEGADORES
 import { initializeApp } from "https://gstatic.com";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://gstatic.com";
 
@@ -61,7 +61,7 @@ async function registrarLogFirestore(autor, acao, detalhe) {
 }
 
 // ========================================================
-// MAAPEAMENTO DE FUNÇÕES PARA O AMBIENTE WINDOW (GLOBAL)
+// CAPA INTERMEDIÁRIA GLOBAL PARA CONEXÃO COM O INDEX.HTML
 // ========================================================
 
 window.firebaseNavegar = function(idPagina) {
@@ -103,6 +103,7 @@ window.firebaseLogin = async function() {
     alert("Credenciais incorretas.");
 };
 
+// MAPEAMENTO COMPATÍVEL COMPLETO (SUPORTE MULTINOMES)
 window.firebaseSalvarAluno = async function() {
     const nome = document.getElementById('cad-aluno-nome').value;
     const whatsapp = document.getElementById('cad-aluno-whatsapp').value;
@@ -128,13 +129,16 @@ window.firebaseSalvarAluno = async function() {
         window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
 
         alert("Aluno salvo com sucesso na Nuvem!");
-        await sincronizarComFirebase(); // Atualiza a lista local
+        await sincronizarComFirebase(); 
         window.firebaseNavegar(3);
     } catch (e) {
         alert("Erro ao salvar no banco. Verifique as regras do Firestore.");
         console.error(e);
     }
 };
+
+// Vincula a mesma lógica em ambos os nomes para evitar qualquer falha no HTML
+window.salvarAluno = window.firebaseSalvarAluno;
 
 window.firebaseSalvarCT = async function() {
     const nome = document.getElementById('cad-ct-nome').value;
@@ -206,7 +210,6 @@ function inicializarModuloFrequencia() {
     if (!html5QrcodeScanner) {
         html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(async (decodedText) => {
-            // Processamento do escaneamento do QR Code da Catraca
             const aluno = session.alunos.find(a => a.id === decodedText);
             if (aluno) {
                 aluno.frequencia = (aluno.frequencia || 0) + 1;
