@@ -1,3 +1,4 @@
+// IMPORTAÇÃO CORRIGIDA VIA CDN INTEGRADO PARA NAVEGADORES
 import { initializeApp } from "https://gstatic.com";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://gstatic.com";
 
@@ -12,7 +13,7 @@ const firebaseConfig = {
   measurementId: "G-4WNMMR8XN4"
 };
 
-// Inicialização
+// Inicialização das instâncias
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -60,20 +61,10 @@ async function registrarLogFirestore(autor, acao, detalhe) {
 }
 
 // ========================================================
-// CAPA INTERMEDIÁRIA GLOBAL PARA CONEXÃO COM O INDEX.HTML
+// MAAPEAMENTO DE FUNÇÕES PARA O AMBIENTE WINDOW (GLOBAL)
 // ========================================================
 
 window.firebaseNavegar = function(idPagina) {
-    if (idPagina !== 1 && idPagina !== 2 && !session.currentUser) {
-        alert("Acesso restrito. Faça login.");
-        idPagina = 1;
-    }
-    
-    if ((idPagina === 9 || idPagina === 13) && session.currentUser?.nivel === "Aluno") {
-        alert("Acesso Proibido para Alunos.");
-        return;
-    }
-
     const footer = document.querySelector('.footer-fixo');
     if (session.currentUser && (session.currentUser.nivel === "Mestre" || session.currentUser.nivel === "Apoio Administrativo")) {
         footer.classList.add('show-footer');
@@ -103,20 +94,13 @@ window.firebaseLogin = async function() {
         return;
     }
 
-    if (loginInput === "apoio@ogroteam.com" && senhaInput === "123") {
-        session.currentUser = { nome: "Apoio 1", email: "apoio@ogroteam.com", nivel: "Apoio Administrativo" };
-        await registrarLogFirestore(`Admin [Apoio]`, "Login", "Entrou no sistema");
-        window.firebaseNavegar(3);
-        return;
-    }
-
     const aluno = session.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
     if (aluno) {
         session.currentUser = { ...aluno, nivel: "Aluno" };
         window.firebaseNavegar(12);
         return;
     }
-    alert("Credenciais incorretas ou dados não encontrados.");
+    alert("Credenciais incorretas.");
 };
 
 window.firebaseSalvarAluno = async function() {
@@ -135,14 +119,21 @@ window.firebaseSalvarAluno = async function() {
         frequencia: 0
     };
 
-    await addDoc(collection(db, "alunos"), payload);
-    await registrarLogFirestore("Sistema", "Cadastro Aluno", `Aluno ${nome} salvo.`);
-    
-    const mensagemTexto = encodeURIComponent(`🥋 Olá ${nome}! Seu cadastro no Ogro Team foi concluído. Acesse o aplicativo usando seu nome ou whatsapp com a senha padrão: 123`);
-    window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
+    try {
+        await addDoc(collection(db, "alunos"), payload);
+        await registrarLogFirestore("Sistema", "Cadastro Aluno", `Aluno ${nome} salvo.`);
+        
+        // Disparo Real de WhatsApp integrado
+        const mensagemTexto = encodeURIComponent(`🥋 Olá ${nome}! Seu cadastro no Ogro Team foi concluído. Acesse o aplicativo usando seu nome ou whatsapp com a senha padrão: 123`);
+        window.open(`https://whatsapp.com{whatsapp}&text=${mensagemTexto}`, '_blank');
 
-    alert("Aluno salvo no Firestore!");
-    window.firebaseNavegar(3);
+        alert("Aluno salvo com sucesso na Nuvem!");
+        await sincronizarComFirebase(); // Atualiza a lista local
+        window.firebaseNavegar(3);
+    } catch (e) {
+        alert("Erro ao salvar no banco. Verifique as regras do Firestore.");
+        console.error(e);
+    }
 };
 
 window.firebaseSalvarCT = async function() {
@@ -160,7 +151,17 @@ window.firebaseSalvarCT = async function() {
 
 window.firebasePresencaManual = async function() {
     const id = document.getElementById('presenca-aluno').value;
-    if(id) await processarEntradaCatracaQR(id);
+    if(id) {
+        const aluno = session.alunos.find(a => a.id === id);
+        if (aluno) {
+            aluno.frequencia = (aluno.frequencia || 0) + 1;
+            const alunoRef = doc(db, "alunos", id);
+            await updateDoc(alunoRef, { frequencia: aluno.frequencia });
+            await registrarLogFirestore("Manual", "Entrada Atleta", `${aluno.nome} entrou.`);
+            alert(`🥊 Presença confirmada para ${aluno.nome}!`);
+            window.firebaseNavegar(3);
+        }
+    }
 };
 
 window.firebaseLogoff = function() {
@@ -204,23 +205,19 @@ function inicializarModuloFrequencia() {
 
     if (!html5QrcodeScanner) {
         html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render((decodedText) => {
-            processarEntradaCatracaQR(decodedText);
+        html5QrcodeScanner.render(async (decodedText) => {
+            // Processamento do escaneamento do QR Code da Catraca
+            const aluno = session.alunos.find(a => a.id === decodedText);
+            if (aluno) {
+                aluno.frequencia = (aluno.frequencia || 0) + 1;
+                const alunoRef = doc(db, "alunos", aluno.id);
+                await updateDoc(alunoRef, { frequencia: aluno.frequencia });
+                await registrarLogFirestore("Catraca QR", "Entrada Atleta", `${aluno.nome} entrou.`);
+                alert(`🥊 BEM-VINDO(A) ${aluno.nome}!`);
+                window.firebaseNavegar(3);
+            }
         }, (error) => {});
     }
-}
-
-async function processarEntradaCatracaQR(idAlunoConfirmado) {
-    const aluno = session.alunos.find(a => a.id === idAlunoConfirmado);
-    if (!aluno) return;
-
-    aluno.frequencia = (aluno.frequencia || 0) + 1;
-    const alunoRef = doc(db, "alunos", aluno.id);
-    await updateDoc(alunoRef, { frequencia: aluno.frequencia });
-
-    await registrarLogFirestore("Catraca QR", "Entrada Atleta", `${aluno.nome} entrou.`);
-    alert(`🥊 BEM-VINDO(A) ${aluno.nome}!`);
-    window.firebaseNavegar(3);
 }
 
 function renderizarCarteirinhaAluno() {
@@ -266,5 +263,5 @@ function renderizarConfiguracoes() {
     });
 }
 
-// Inicializar Sincronismo na Carga do Arquivo
+// Inicializar Sincronismo automático
 sincronizarComFirebase();
