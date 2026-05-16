@@ -1,59 +1,48 @@
 // ========================================================
-// 📊 BANCO DE DADOS CORE & ESTADO DINÂMICO DO SISTEMA
+// 🛠️ CONFIGURAÇÃO DE CONTINGÊNCIA E ESTADO COMPLETO (SÉRIE REATIVO)
 // ========================================================
-window.session = {
+let session = {
     currentUser: null,
     precos: { Comercial: 150, Atleta: 100, Bolsista: 0, Instrutor: 80 },
     alunos: [
-        { id: "101", nome: "Carlos Silva", whatsapp: "21999998888", plano: "Mensal", statusFinanceiro: "Em dia", perfil: "Comercial", modalidade: "Muay Thai", graduacao: "Vermelho", foto: "", frequencia: 14, dataCadastro: "10/05/2026" },
-        { id: "102", nome: "Marcos Lima", whatsapp: "21988887777", plano: "Trimestral", statusFinanceiro: "Inadimplente", perfil: "Atleta", modalidade: "Boxe", graduacao: "Classe B (Avançado)", foto: "", frequencia: 8, dataCadastro: "12/05/2026" }
+        { id: "1", nome: "Carlos Silva", whatsapp: "21999998888", plano: "Mensal", statusFinanceiro: "Em dia", perfil: "Comercial", modalidade: "Muay Thai", graduacao: "Vermelho", frequencia: 14, foto: "" },
+        { id: "2", nome: "Marcos Lima", whatsapp: "21988887777", plano: "Trimestral", statusFinanceiro: "Inadimplente", perfil: "Atleta", modalidade: "Boxe", graduacao: "Classe B (Avançado)", frequencia: 8, foto: "" }
     ],
     cts: [
-        { id: "201", nome: "CT Matriz - Campo Grande", cnpj: "12.345.678/0001-00", responsavel: "Mestre Ogro", endereco: "Av. Cesário de Melo, 1500", cidade: "Rio de Janeiro/RJ", whatsapp: "21977776666", capacidade: 40, mensalidade: 150 }
+        { id: "1", nome: "CT Matriz", cnpj: "12.345.678/0001-00", responsavel: "Mestre Ogro", endereco: "Av. Principal, 100", cidade: "Rio de Janeiro/RJ", whatsapp: "21977776666", capacidade: 30, mensalidade: 150 }
     ],
     admins: [
-        { id: "301", nome: "Mestre Ogro", email: "admin@ogroteam.com", senha: "123", nivel: "Mestre", foto: "" },
-        { id: "302", nome: "Apoio 1", email: "apoio@ogroteam.com", senha: "123", nivel: "Apoio Administrativo", foto: "" }
+        { id: "1", nome: "Mestre Ogro", email: "admin@ogroteam.com", senha: "123", nivel: "Mestre" },
+        { id: "2", nome: "Apoio 1", email: "apoio@ogroteam.com", senha: "123", nivel: "Apoio Administrativo" }
     ],
     logs: [
-        { data: "15/05/2026 - 10:14", autor: "Admin [Mestre]", acao: "Configuração", detalhe: "Tabela de preços inicial sincronizada na nuvem." }
-    ],
-    editandoId: null,
-    editandoTipo: null,
-    fotoTemporaria: ""
+        { data: "16/05/2026 - 10:14", autor: "Admin [Mestre]", acao: "Inicialização", detalhe: "Sistema de segurança unificado ativado com sucesso." }
+    ]
 };
 
-// ========================================================
-// 🛡️ MOTOR DE NAVEGAÇÃO OPERACIONAL E TRAVAS DE ACESSO
-// ========================================================
+// GLOBALIZAÇÃO DE FUNÇÕES DE NAVEGAÇÃO E TRAVAS RÍGIDAS
 window.navegarPara = function(idPagina) {
-    // Validação rígida de login pendente
-    if (idPagina !== 1 && idPagina !== 2 && !window.session.currentUser) {
-        alert("🔒 Acesso restrito! Efetue login para entrar na Arena.");
+    // Validação de Sessão ativa
+    if (idPagina !== 1 && idPagina !== 2 && !session.currentUser) {
+        alert("Acesso negado: Efetue o login.");
         idPagina = 1;
     }
-    
-    // Regra de privilégio para Aluno Comum (Apenas Página 12)
-    if (window.session.currentUser?.nivel === "Aluno" && idPagina !== 12 && idPagina !== 1) {
-        alert("🛑 Acesso Negado: Alunos possuem permissão exclusiva para a Central Individual.");
+
+    // Trava de perfil Aluno Comercial/Atleta/Bolsista
+    if ((idPagina === 3 || idPagina === 9 || idPagina === 13) && session.currentUser?.nivel === "Aluno") {
+        alert("Acesso Restrito: Seu perfil não possui permissões administrativas.");
         return;
     }
 
-    // Regra de privilégio para Aluno Instrutor (Página 12 e Página 8 - Chamadas)
-    if (window.session.currentUser?.nivel === "Aluno Instrutor" && idPagina !== 12 && idPagina !== 8 && idPagina !== 1) {
-        alert("🛑 Acesso Híbrido Restrito: Instrutores acessam apenas a sua área e a folha de chamadas.");
+    // Trava do perfil Apoio Administrativo (Não acessa a Página 13)
+    if (idPagina === 13 && session.currentUser?.nivel === "Apoio Administrativo") {
+        alert("Acesso Bloqueado: Usuários com nível de Apoio não acessam as Configurações de Preços e Logs.");
         return;
     }
 
-    // Regra de bloqueio completo de Configurações e Logs (Página 13) para Apoio Administrativo
-    if (idPagina === 13 && window.session.currentUser?.nivel === "Apoio Administrativo") {
-        alert("🛡️ Bloqueio de Auditoria: Perfil de Apoio não possui acesso à Tabela de Preços e Logs.");
-        return;
-    }
-
-    // Gerenciador Inteligente do Rodapé Global para Perfis de Gestão
+    // Gerenciador Dinâmico do Rodapé Fixo Global
     const footer = document.querySelector('.footer-fixo');
-    if (window.session.currentUser && (window.session.currentUser.nivel === "Mestre" || window.session.currentUser.nivel === "Apoio Administrativo")) {
+    if (session.currentUser && (session.currentUser.nivel === "Mestre" || session.currentUser.nivel === "Apoio Administrativo")) {
         footer.classList.add('show-footer');
     } else {
         footer.classList.remove('show-footer');
@@ -61,456 +50,504 @@ window.navegarPara = function(idPagina) {
 
     // Transição de telas
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const paginaAlvo = document.getElementById(`p${idPagina}`);
-    if (paginaAlvo) paginaAlvo.classList.add('active');
+    const destino = document.getElementById(`p${idPagina}`);
+    if (destino) destino.classList.add('active');
 
-    // Inicialização automática dos Dashboards Dinâmicos e Listas Reativas
-    if (idPagina === 3) renderizarMenuPremium();
-    if (idPagina === 6) renderizarDashboardBrutal();
-    if (idPagina === 7) renderizarEquipeEAtribuicoes();
-    if (idPagina === 8) renderizarFrequenciaEPlanejamento();
-    if (idPagina === 9) renderizarCadastrosSincronizados();
-    if (idPagina === 11) renderizarRelatoriosAvancados();
-    if (idPagina === 12) renderizarAreaAlunoPremium();
-    if (idPagina === 13) renderizarConfiguracoesEAuditoria();
+    // Inicializadores de interface reativa
+    if (idPagina === 3) renderizarCardsControle();
+    if (idPagina === 6) renderizarDashboard();
+    if (idPagina === 7) renderizarEquipeAdmin();
+    if (idPagina === 8) inicializarModuloFrequencia();
+    if (idPagina === 9) renderizarCadastros();
+    if (idPagina === 11) processarFiltroRelatorio();
+    if (idPagina === 12) renderizarCarteirinhaAluno();
+    if (idPagina === 13) renderizarConfiguracoes();
 };
 
-function registrarLogGlobal(autor, acao, detalhe) {
+window.firebaseNavegar = window.navegarPara;
+
+// HISTÓRICO AUTOMÁTICO DE AUDITORIA
+function registrarLogLocal(autor, acao, detalhe) {
     const agora = new Date();
     const dataFormatada = `${agora.toLocaleDateString('pt-BR')} - ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
-    window.session.logs.unshift({ data: dataFormatada, autor, acao, detalhe });
+    session.logs.unshift({ data: dataFormatada, autor, acao, detalhe });
 }
 
+// UPLOAD E CONVERSÃO DE FOTO EM TEMPO REAL
+window.previewFoto = function(event, elementId) {
+    const reader = new FileReader();
+    reader.onload = function() {
+        const preview = document.getElementById(elementId);
+        preview.style.backgroundImage = `url(${reader.result})`;
+        preview.textContent = "";
+        preview.dataset.fotoBase64 = reader.result;
+    }
+    if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+};
+
 // ========================================================
-// 🔐 CONTROLE VISUAL E PROCESSAMENTO DE ACESSOS
+// 🔐 SISTEMA DE AUTENTICAÇÃO E RECUPERAÇÃO DE CREDENCIAIS
 // ========================================================
 window.executarLogin = function() {
-    const loginInput = document.getElementById('login-email').value.trim();
-    const senhaInput = document.getElementById('login-senha').value;
+    const input = document.getElementById('login-email').value;
+    const senha = document.getElementById('login-senha').value;
 
-    // 1. Validação de Administradores Master / Apoio
-    const adm = window.session.admins.find(a => (a.email === loginInput || a.nome === loginInput) && a.senha === senhaInput);
+    const adm = session.admins.find(a => (a.email === input || a.nome === input) && a.senha === senha);
     if (adm) {
-        window.session.currentUser = adm;
-        registrarLogGlobal(`Admin [${adm.nivel}]`, "Login", `O usuário ${adm.nome} entrou no sistema.`);
+        session.currentUser = adm;
+        registrarLogLocal(`Admin [${adm.nivel}]`, "Login", "Autenticação realizada com sucesso.");
         window.navegarPara(3);
         return;
     }
 
-    // 2. Validação de Alunos / Alunos Instrutores
-    const aluno = window.session.alunos.find(a => (a.whatsapp === loginInput || a.nome === loginInput) && senhaInput === "123");
+    const aluno = session.alunos.find(a => (a.whatsapp === input || a.nome === input) && senha === "123");
     if (aluno) {
-        window.session.currentUser = { ...aluno, nivel: aluno.perfil === "Instrutor" ? "Aluno Instrutor" : "Aluno" };
+        session.currentUser = { ...aluno, nivel: aluno.perfil === "Instrutor" ? "Aluno Instrutor" : "Aluno" };
         window.navegarPara(aluno.perfil === "Instrutor" ? 8 : 12);
         return;
     }
-
-    alert("❌ Credenciais Inválidas! Verifique os dados digitados.");
+    alert("Credenciais inválidas no sistema Ogro Team.");
 };
 
-window.alternarSenha = function() {
-    const input = document.getElementById('login-senha');
-    input.type = input.type === 'password' ? 'text' : 'password';
+window.firebaseLogin = window.executarLogin;
+
+window.atualizarSenhaReal = function() {
+    const usuario = document.getElementById('recup-usuario').value;
+    const nova = document.getElementById('recup-nova').value;
+
+    let adm = session.admins.find(a => a.email === usuario || a.nome === usuario);
+    if (adm) {
+        const senhaAntiga = adm.senha;
+        adm.senha = nova;
+        registrarLogLocal("Sistema", "Alteração Credencial", `Senha de ${adm.nome} modificada na memória.`);
+        alert("Senha atualizada com sucesso em tempo real!");
+        window.navegarPara(1);
+        return;
+    }
+    alert("Usuário não localizado na base.");
 };
+
+// BLOCK DE CONTROLE VISUAL PREMIUM DOS CARDS
+function renderizarCardsControle() {
+    const cardConfig = document.getElementById('card-config');
+    if (session.currentUser?.nivel === "Apoio Administrativo") {
+        cardConfig.style.opacity = "0.4";
+        cardConfig.style.cursor = "not-allowed";
+    } else {
+        cardConfig.style.opacity = "1";
+        cardConfig.style.cursor = "pointer";
+    }
+}
 
 // ========================================================
-// 👤 MÓDULO DE CADASTROS INDUSTRIAIS (ALUNOS E ACADEMIAS)
+// 👤 MÓDULOS DE GRAVAÇÃO DE DADOS (ALUNOS, FILIAIS, GESTORES)
 // ========================================================
-window.capturarFotoPerfil = function(event, previewId) {
-    const reader = new FileReader();
-    reader.onload = function() {
-        document.getElementById(previewId).style.backgroundImage = `url(${reader.result})`;
-        document.getElementById(previewId).textContent = "";
-        window.session.fotoTemporaria = reader.result;
-    };
-    if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
-};
-
-window.firebaseSalvarAluno = function() {
-    const nome = document.getElementById('cad-aluno-nome').value.trim();
-    const whatsapp = document.getElementById('cad-aluno-whatsapp').value.trim();
+window.salvarAluno = function() {
+    const nome = document.getElementById('cad-aluno-nome').value;
+    const whatsapp = document.getElementById('cad-aluno-whatsapp').value;
     const perfil = document.getElementById('cad-aluno-perfil').value;
+    const foto = document.getElementById('aluno-foto-preview').dataset.fotoBase64 || "";
 
-    if (!nome || !whatsapp) return alert("⚠️ Preencha Nome Completo e WhatsApp para salvar.");
+    if (!nome || !whatsapp) return alert("Preencha Nome e WhatsApp para processar.");
 
-    const novoAluno = {
+    const novo = {
         id: String(Date.now()),
-        nome, whatsapp, perfil,
+        nome, whatsapp, perfil, foto,
         plano: document.getElementById('cad-aluno-plano').value,
         statusFinanceiro: document.getElementById('cad-aluno-status').value,
         modalidade: document.getElementById('cad-aluno-modalidade').value,
         graduacao: document.getElementById('cad-aluno-graduacao').value,
-        foto: window.session.fotoTemporaria || "",
-        frequencia: 0,
-        dataCadastro: new Date().toLocaleDateString('pt-BR')
+        frequencia: 0
     };
 
-    window.session.alunos.push(novoAluno);
-    registrarLogGlobal(`Admin [${window.session.currentUser?.nivel || 'Mestre'}]`, "Cadastro Aluno", `Matriculou o atleta ${nome} no perfil ${perfil}.`);
-    window.session.fotoTemporaria = ""; // Reseta buffer
+    session.alunos.push(novo);
+    registrarLogLocal(`Admin [${session.currentUser?.nivel}]`, "Cadastro Aluno", `Aluno ${nome} vinculado ao perfil ${perfil}.`);
 
-    // Envio Real de Notificação customizada via API do WhatsApp
-    const msg = encodeURIComponent(`🥋 Olá *${nome}*! Seu acesso premium à plataforma do *Ogro Team* foi liberado.\n\n📱 *Link do App:* https://github.io\n🔐 *Seu Usuário:* ${whatsapp}\n🔑 *Sua Senha Provisória:* 123`);
-    
-    alert(`🎉 Aluno cadastrado com sucesso!`);
-    window.open(`https://whatsapp.com{whatsapp}&text=${msg}`, '_blank');
-    window.navegarPara(3); // Retorna automaticamente para o Painel de Gestão
+    // Reset de campos
+    document.getElementById('cad-aluno-nome').value = "";
+    document.getElementById('cad-aluno-whatsapp').value = "";
+    document.getElementById('aluno-foto-preview').style.backgroundImage = "none";
+    document.getElementById('aluno-foto-preview').textContent = "Toque para Foto";
+
+    // Disparo de mensagem no WhatsApp do aluno
+    const msg = encodeURIComponent(`🥋 Fala ${nome}! Seu acesso ao Ogro Team tá liberado. Entre com seu Nome ou Whats e use a senha padrão: 123`);
+    window.location.href = `https://whatsapp.com{whatsapp}&text=${msg}`;
 };
-window.salvarAluno = window.firebaseSalvarAluno;
 
-window.firebaseSalvarCT = function() {
-    const nome = document.getElementById('cad-ct-nome').value.trim();
-    if (!nome) return alert("⚠️ O nome da unidade/filial é obrigatório.");
+window.firebaseSalvarAluno = window.salvarAluno;
 
-    const novoCT = {
+window.salvarCT = function() {
+    const nome = document.getElementById('cad-ct-nome').value;
+    if(!nome) return alert("Nome da Filial obrigatório.");
+
+    session.cts.push({
         id: String(Date.now()),
         nome,
-        cnpj: document.getElementById('cad-ct-cnpj').value || "Não informado",
-        responsavel: document.getElementById('cad-ct-responsavel').value || "Não informado",
-        endereco: document.getElementById('cad-ct-endereco').value || "Não informado",
-        cidade: document.getElementById('cad-ct-cidade').value || "Não informado",
-        whatsapp: document.getElementById('cad-ct-whatsapp').value || "Não informado",
-        capacidade: document.getElementById('cad-ct-capacidade').value || "30",
-        mensalidade: parseFloat(document.getElementById('cad-ct-mensalidade').value) || 150
-    };
+        cnpj: document.getElementById('cad-ct-cnpj').value,
+        responsavel: document.getElementById('cad-ct-responsavel').value,
+        endereco: document.getElementById('cad-ct-endereco').value,
+        cidade: document.getElementById('cad-ct-cidade').value,
+        whatsapp: document.getElementById('cad-ct-whatsapp').value,
+        capacidade: document.getElementById('cad-ct-capacidade').value,
+        mensalidade: document.getElementById('cad-ct-mensalidade').value
+    });
 
-    window.session.cts.push(novoCT);
-    registrarLogGlobal(`Admin [${window.session.currentUser?.nivel || 'Mestre'}]`, "Cadastro CT", `Registrou a filial ${nome}.`);
-    
-    alert(`🏛️ Unidade ${nome} registrada com sucesso!`);
-    window.navegarPara(3); // Retorna para a página inicial
+    registrarLogLocal(`Admin [${session.currentUser?.nivel}]`, "Cadastro CT", `Nova filial registrada: ${nome}.`);
+    alert("Filial integrada com sucesso!");
+    window.navegarPara(3);
 };
-window.salvarCT = window.firebaseSalvarCT;
+
+window.firebaseSalvarCT = window.salvarCT;
+
+window.salvarNovoAdmin = function() {
+    const nome = document.getElementById('adm-nome').value;
+    const email = document.getElementById('adm-email').value;
+    const senha = document.getElementById('adm-senha').value;
+    const nivel = document.getElementById('adm-nivel').value;
+
+    if(!nome || !email || !senha) return alert("Preencha todos os campos do formulário.");
+
+    session.admins.push({ id: String(Date.now()), nome, email, senha, nivel });
+    registrarLogLocal("Mestre", "Nova Atribuição", `Criou perfil de gestão ${nome} como [${nivel}].`);
+    alert("Novo gestor incluído na equipe!");
+    
+    document.getElementById('adm-nome').value = "";
+    document.getElementById('adm-email').value = "";
+    document.getElementById('adm-senha').value = "";
+    renderizarEquipeAdmin();
+};
+
+window.promoverUsuario = function(idAluno, nivelAlvo) {
+    const aluno = session.alunos.find(a => a.id === String(idAluno));
+    if(!aluno) return;
+
+    session.admins.push({
+        id: String(Date.now()),
+        nome: aluno.nome,
+        email: `${aluno.nome.toLowerCase().replace(/\s+/g, '')}@ogroteam.com`,
+        senha: "123",
+        nivel: nivelAlvo
+    });
+
+    registrarLogLocal("Mestre", "Privilégio Alterado", `Promoveu o aluno ${aluno.nome} para [${nivelAlvo}] 🛡️.`);
+    alert(`${aluno.nome} promovido a equipe de gerenciamento com sucesso!`);
+    renderizarEquipeAdmin();
+};
 
 // ========================================================
-// 📈 DASHBOARD FINANCEIRO E MÓDULO DE COBRANÇAS
+// 📊 RENDERIZADORES DO CORAÇÃO FINANCEIRO (MÉTRICAS PREMIUM)
 // ========================================================
-function renderizarDashboardBrutal() {
-    let faturamentoTotal = 0, inadimplenciaTotal = 0, recebidoTotal = 0;
+function renderizarDashboard() {
+    let faturamento = 0, inadimplencia = 0, recebido = 0;
     let ativos = 0, devedores = 0;
 
-    window.session.alunos.forEach(a => {
-        const valorPlano = window.session.precos[a.perfil] || 0;
-        faturamentoTotal += valorPlano;
+    session.alunos.forEach(a => {
+        const valor = Number(session.precos[a.perfil]) || 0;
+        faturamento += valor;
         if (a.statusFinanceiro === "Em dia") {
-            recebidoTotal += valorPlano;
+            recebido += valor;
             ativos++;
         } else {
-            inadimplenciaTotal += valorPlano;
+            inadimplencia += valor;
             devedores++;
         }
     });
 
-    document.getElementById('dash-faturamento').textContent = `R$ ${faturamentoTotal.toFixed(2)}`;
-    document.getElementById('dash-inadimplencia').textContent = `R$ ${inadimplenciaTotal.toFixed(2)}`;
-    document.getElementById('dash-recebido').textContent = `R$ ${recebidoTotal.toFixed(2)}`;
+    // Atualização matemática em tempo real
+    document.getElementById('dash-faturamento').textContent = `R$ ${faturamento.toFixed(2)}`;
+    document.getElementById('dash-inadimplencia').textContent = `R$ ${inadimplencia.toFixed(2)}`;
+    document.getElementById('dash-recebido').textContent = `R$ ${recebido.toFixed(2)}`;
+    document.getElementById('dash-ativos').textContent = ativos;
+    document.getElementById('dash-devedores').textContent = devedores;
 
-    // Renderização dos Gráficos em Barras Gráficas via CSS Dinâmico
-    const totalFin = faturamentoTotal || 1;
-    const pctRecebido = (recebidoTotal / totalFin) * 100;
-    const pctAtraso = (inadimplenciaTotal / totalFin) * 100;
+    // Barras de Progresso Gráfico Premium
+    const totalAlunos = ativos + devedores || 1;
+    document.getElementById('bar-recebido').style.width = `${(ativos / totalAlunos) * 100}%`;
+    document.getElementById('bar-inadimplencia').style.width = `${(devedores / totalAlunos) * 100}%`;
 
-    const containerDevedores = document.getElementById('dash-lista-devedores');
-    containerDevedores.innerHTML = `
-        <div style="margin-bottom:15px; background:#161616; padding:12px; border-radius:6px; border:1px solid #262626;">
-            <p style="font-size:12px; color:#8a8a8a; margin-bottom:4px; text-transform:uppercase;">Saúde do Caixa da Arena</p>
-            <div style="display:flex; height:12px; border-radius:4px; overflow:hidden; background:#222;">
-                <div style="width:${pctRecebido}%; background:#4ade80;"></div>
-                <div style="width:${pctAtraso}%; background:#ba0f14;"></div>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:6px;">
-                <span style="color:#4ade80;">✔ ${pctRecebido.toFixed(0)}% Recebido</span>
-                <span style="color:#f87171;">⚠️ ${pctAtraso.toFixed(0)}% Inadimplente</span>
-            </div>
-        </div>
-    `;
-
-    // Listagem da régua de cobrança automatizada
-    const listaInad = window.session.alunos.filter(a => a.statusFinanceiro !== "Em dia");
-    if (listaInad.length === 0) {
-        containerDevedores.innerHTML += `<p style="font-size:13px; color:#8a8a8a; text-align:center; padding:10px;">🏆 Caixa Perfeito! Zero inadimplência registrada.</p>`;
-    } else {
-        listaInad.forEach(a => {
-            const msgInad = encodeURIComponent(`⚠️ *Aviso Importante do Ogro Team* ⚠️\n\nOlá *${a.nome}*, identificamos uma pendência financeira em aberto referente ao seu plano *${a.plano}*.\n\nPor favor, efetue o pagamento via Pix ou procure a recepção para liberar sua carteirinha e evitar o bloqueio na catraca.`);
-            const div = document.createElement('div');
-            div.className = "item-registro";
-            div.innerHTML = `
-                <div>
-                    <strong>${a.nome}</strong> <br>
-                    <small style="color:#ef4444;">Perfil: ${a.perfil} | Pendente: R$ ${(window.session.precos[a.perfil] || 0).toFixed(2)}</small>
-                </div>
-                <button class="btn btn-primary" style="padding:6px 12px; font-size:12px; width:auto; margin-top:0;" onclick="window.open('https://whatsapp.com{a.whatsapp}&text=${msgInad}', '_blank')">Notificar</button>
-            `;
-            containerDevedores.appendChild(div);
-        });
-    }
+    const lista = document.getElementById('dash-lista-devedores');
+    lista.innerHTML = "";
+    session.alunos.filter(a => a.statusFinanceiro !== "Em dia").forEach(a => {
+        const div = document.createElement('div');
+        div.className = "item-registro";
+        const msg = encodeURIComponent(`⚠️ Fala ${a.nome}, passando pra lembrar da mensalidade pendente no Ogro Team (Plano: ${a.plano}). Dá uma passada na secretaria pra acertar, valeu!`);
+        div.innerHTML = `
+            <div><strong>${a.nome}</strong><br><small style="color:#ef4444;">Perfil: ${a.perfil}</small></div>
+            <button class="btn btn-primary" style="padding:4px 8px; font-size:12px; width:auto; display:inline;" onclick="window.location.href='https://whatsapp.com{a.whatsapp}&text=${msg}'">Cobrar Whats</button>
+        `;
+        lista.appendChild(div);
+    });
 }
 
-// ========================================================
-// 👥 GESTÃO AVANÇADA DE EQUIPE E PRIVILÉGIOS
-// ========================================================
-function renderizarEquipeEAtribuicoes() {
-    const containerAlunos = document.getElementById('lista-promocao-alunos');
-    containerAlunos.innerHTML = "";
-
-    // Painel do formulário de criação de novos administradores
-    const formHtml = `
-        <div style="background:#121212; padding:15px; border-radius:8px; border:1px solid #262626; margin-bottom:20px;">
-            <h3>🛡️ Adicionar Administrador Manual</h3>
-            <div class="form-group" style="margin-top:10px;"><label>Nome Completo</label><input type="text" id="adm-novo-nome"></div>
-            <div class="form-group"><label>E-mail Corporativo</label><input type="email" id="adm-novo-email"></div>
-            <div class="form-group"><label>Senha de Acesso</label><input type="password" id="adm-novo-senha" placeholder="Mínimo 3 dígitos"></div>
-            <div class="form-group">
-                <label>Nível de Acesso</label>
-                <select id="adm-novo-nivel">
-                    <option value="Administrador Integral">Administrador Integral</option>
-                    <option value="Apoio Administrativo">Apoio Administrativo</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" onclick="salvarNovoAdminModulo()">Gravar Novo Gestor</button>
-        </div>
-        <h3>🛡️ Lista Geral de Atletas Elegíveis para Promoção</h3>
-    `;
-    
-    // Injeção dinâmica do formulário que havia sumido anteriormente
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = formHtml;
-    containerAlunos.appendChild(wrapper);
-
-    window.session.alunos.forEach(a => {
+function renderizarEquipeAdmin() {
+    const container = document.getElementById('lista-promocao-alunos');
+    container.innerHTML = "";
+    session.alunos.forEach(a => {
         const div = document.createElement('div');
         div.className = "item-registro";
         div.innerHTML = `
+            <span><strong>${a.nome}</strong> (${a.perfil})</span>
             <div>
-                <strong>${a.nome}</strong> <br>
-                <small style="color:#8a8a8a;">Vínculo Atual: ${a.perfil}</small>
-            </div>
-            <div style="display:flex; gap:6px;">
-                <button class="btn btn-primary" style="padding:4px 8px; font-size:11px; width:auto; margin-top:0;" onclick="promoverAtletaParaAdmin(${a.id}, 'Mestre')">Mestre</button>
-                <button class="btn btn-accent" style="padding:4px 8px; font-size:11px; width:auto; margin-top:0;" onclick="promoverAtletaParaAdmin(${a.id}, 'Apoio Administrativo')">Apoio</button>
+                <button class="btn btn-primary" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block;" onclick="promoverUsuario('${a.id}', 'Administrador Integral')">Promover Admin</button>
+                <button class="btn btn-accent" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block; background:#262626;" onclick="promoverUsuario('${a.id}', 'Apoio Administrativo')">Promover Apoio</button>
             </div>
         `;
-        containerAlunos.appendChild(div);
+        container.appendChild(div);
     });
 }
 
-window.salvarNovoAdminModulo = function() {
-    const nome = document.getElementById('adm-novo-nome').value.trim();
-    const email = document.getElementById('adm-novo-email').value.trim();
-    const senha = document.getElementById('adm-novo-senha').value;
-    const nivel = document.getElementById('adm-novo-nivel').value;
-
-    if (!nome || !email || !senha) return alert("⚠️ Todos os campos são obrigatórios para registrar o gestor.");
-
-    window.session.admins.push({ id: String(Date.now()), nome, email, senha, nivel, foto: "" });
-    registrarLogGlobal(`Admin [Mestre]`, "Nova Atribuição", `Criou o gestor corporativo ${nome} com nível de ${nivel}.`);
-    alert(`🛡️ Gestor registrado com sucesso!`);
-    renderizarEquipeEAtribuicoes();
-};
-
-window.promoverAtletaParaAdmin = function(idAtleta, nivelAlvo) {
-    const atleta = window.session.alunos.find(a => a.id === String(idAtleta));
-    if (!atleta) return;
-
-    window.session.admins.push({
-        id: String(Date.now()),
-        nome: atleta.nome,
-        email: `${atleta.nome.toLowerCase().replace(/\s+/g, '')}@ogroteam.com`,
-        senha: "123",
-        nivel: nivelAlvo,
-        foto: atleta.foto
-    });
-
-    registrarLogGlobal(`Admin [Mestre]`, "Privilégio Alterado", `Promoveu o aluno ${atleta.nome} para cargo de Administrador [${nivelAlvo}] 🛡️.`);
-    alert(`🔥 SUCESSO: ${atleta.nome} foi promovido para a gestão da Arena como ${nivelAlvo}! Tag protetora 🛡️ anexada.`);
-    renderizarEquipeEAtribuicoes();
-};
-
 // ========================================================
-// ⏱️ CHIP DE FREQUÊNCIA & LEITOR VIRTUAL DA CATRACA QR
+// ⏱️ CATRACA VIRTUAL INTELIGENTE (LEITOR QR E SELEÇÃO)
 // ========================================================
-function renderizarFrequenciaEPlanejamento() {
-    const select = document.getElementById('presenca-aluno');
-    select.innerHTML = "";
-    window.session.alunos.forEach(a => select.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
+let html5QrcodeScanner = null;
+function inicializarModuloFrequencia() {
+    const selectAluno = document.getElementById('presenca-aluno');
+    const selectCT = document.getElementById('presenca-ct');
+    
+    selectAluno.innerHTML = "";
+    selectCT.innerHTML = "";
 
-    // Injeção do layout interativo do scanner de câmera virtual
-    const containerReader = document.getElementById('reader');
-    containerReader.innerHTML = `
-        <div style="padding:20px; text-align:center;">
-            <div style="width:70px; height:70px; border:3px solid #ba0f14; border-radius:50%; display:inline-flex; justify-content:center; align-items:center; font-size:28px; animation: pulse 1.5s infinite; background: rgba(186,15,20,0.1);">📹</div>
-            <p style="font-size:13px; color:#ffffff; margin-top:12px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">Aguardando Sinal da Câmera...</p>
-            <button class="btn btn-primary" style="margin-top:15px; font-size:12px; padding:8px 12px;" onclick="simularLeituraDeCatracaQR()">Simular Escaneamento de Carteirinha</button>
-        </div>
-    `;
+    session.alunos.forEach(a => selectAluno.innerHTML += `<option value="${a.id}">${a.nome}</option>`);
+    session.cts.forEach(c => selectCT.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
 }
 
-window.simularLeituraDeCatracaQR = function() {
-    if (window.session.alunos.length === 0) return alert("Nenhum atleta cadastrado.");
-    // Sorteia um aluno da base para simular o recebimento do token criptografado do QR Code
-    const alunoSorteado = window.session.alunos[Math.floor(Math.random() * window.session.alunos.length)];
-    window.processarEntradaCatracaQR(alunoSorteado.id);
+window.ativarCameraCatraca = function() {
+    document.getElementById('reader').style.display = "block";
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 220 });
+        html5QrcodeScanner.render((text) => {
+            html5QrcodeScanner.clear();
+            document.getElementById('reader').style.display = "none";
+            processarEntradaValidada(text);
+        }, (err) => {});
+    }
 };
 
-window.processarEntradaCatracaQR = function(idAlunoVerificado) {
-    const aluno = window.session.alunos.find(a => a.id === String(idAlunoVerificado));
-    if (!aluno) return;
+async function processarEntradaValidada(idAluno) {
+    const aluno = session.alunos.find(a => a.id === String(idAluno));
+    const ctSelecionado = document.getElementById('presenca-ct').value;
+    const ct = session.cts.find(c => c.id === String(ctSelecionado)) || { nome: "CT Principal" };
+
+    if (!aluno) return alert("QR Code Inválido ou Aluno Não Encontrado.");
 
     aluno.frequencia = (aluno.frequencia || 0) + 1;
-    registrarLogGlobal("Catraca QR Code", "Entrada Atleta", `Frequência computada para ${aluno.nome} via scanner.`);
+    registrarLogLocal("Catraca QR", "Frequência", `Entrada de ${aluno.nome} autorizada no ${ct.nome}.`);
 
-    // Injeção imediata no painel do mural da arena em ordem cronológica reversa
     const mural = document.getElementById('mural-chamadas');
-    const item = document.createElement('div');
-    item.className = "item-registro";
-    item.style.borderLeft = "4px solid #4ade80";
-    item.innerHTML = `
-        <div>
-            <strong>🟢 ${new Date().toLocaleTimeString('pt-BR')}</strong> - Entrada Liberada
-            <br><small style="color:#ffffff; font-weight:bold;">${aluno.nome} | Graduação: ${aluno.graduacao}</small>
-        </div>
-        <span style="font-size:11px; color:#8a8a8a;">Check-in #${aluno.frequencia}</span>
-    `;
-    mural.insertBefore(item, mural.firstChild);
-    alert(`🥊 ACESSO LIBERADO!\nBem-vindo à Arena, ${aluno.nome}.`);
-};
+    const div = document.createElement('div');
+    div.className = "item-registro animate-hit";
+    div.innerHTML = `<strong>${new Date().toLocaleTimeString('pt-BR')}</strong> - 🥋 ${aluno.nome} entrou no ${ct.nome}`;
+    mural.insertBefore(div, mural.firstChild);
 
-window.firebasePresencaManual = function() {
+    alert(`🥊 ACESSO LIBERADO: Bom treino, ${aluno.nome}!`);
+}
+
+window.confirmarPresencaManual = function() {
     const id = document.getElementById('presenca-aluno').value;
-    if (id) window.processarEntradaCatracaQR(id);
+    if(id) processarEntradaValidada(id);
 };
-window.confirmarPresencaManual = window.firebasePresencaManual;
 
 // ========================================================
-// 🗂️ CENTRAL DE REGISTROS SINCRONIZADOS & OPERAÇÕES
+// 🗂️ CENTRAL DE REGISTROS, EDIÇÃO E RELATÓRIOS PREMIUM
 // ========================================================
-function renderizarCadastrosSincronizados() {
+function renderizarCadastros() {
     const busca = document.getElementById('pesquisa-reativa').value.toLowerCase();
     const container = document.getElementById('lista-sincronizada');
     container.innerHTML = "";
 
-    // 1. Renderização Reativa da Esteira de Alunos
-    window.session.alunos.filter(a => a.nome.toLowerCase().includes(busca)).forEach(a => {
+    // Listagem reativa de Alunos
+    session.alunos.filter(a => a.nome.toLowerCase().includes(busca)).forEach(a => {
         const div = document.createElement('div');
         div.className = "item-registro";
-        // Tag com foto ou emoji avatar padrão se estiver sem imagem de upload
-        const avatarStyle = a.foto ? `background-image:url(${a.foto}); background-size:cover;` : `background:#222; display:flex; align-items:center; justify-content:center;`;
-        const avatarInner = a.foto ? "" : "🥋";
-        
+        const f = a.foto ? `background-image:url(${a.foto});` : "";
         div.innerHTML = `
             <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:40px; height:40px; border-radius:50%; border:1px solid #ba0f14; ${avatarStyle}">${avatarInner}</div>
-                <div>
-                    <strong>${a.nome}</strong> <span class="badge" style="background:#ba0f14; font-size:9px;">${a.graduacao}</span><br>
-                    <small style="color:#8a8a8a;">Perfil: ${a.perfil} | Plano: ${a.plano}</small>
-                </div>
+                <div class="mini-avatar" style="${f}"></div>
+                <div><strong>${a.nome}</strong><br><small style="color:#8a8a8a;">${a.perfil} | Freq: ${a.frequencia} aulas</small></div>
             </div>
             <div>
-                <span class="badge" style="background:${a.statusFinanceiro === 'Em dia' ? '#4ade80':'#ef4444'}">${a.statusFinanceiro}</span>
-                <button class="btn btn-vermelho" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block; margin-top:0; margin-left:6px;" onclick="deletarRegistroModulo('${a.id}', 'aluno')">Deletar</button>
+                <span class="badge" style="background:${a.statusFinanceiro === 'Em dia' ? '#4ade80':'#ba0f14'}">${a.statusFinanceiro}</span>
+                <button class="btn btn-primary" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block; margin-left:5px;" onclick="abrirEdicao('${a.id}')">Editar</button>
+                <button class="btn btn-vermelho" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block; margin-left:2px;" onclick="excluirItem('${a.id}', 'aluno')">Excluir</button>
             </div>
         `;
         container.appendChild(div);
     });
 
-    // 2. Renderização Reativa da Esteira de Unidades (CTs)
-    window.session.cts.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
+    // Listagem reativa de Filiais
+    session.cts.filter(c => c.nome.toLowerCase().includes(busca)).forEach(c => {
         const div = document.createElement('div');
         div.className = "item-registro";
-        div.style.borderLeft = "3px solid #8a8a8a";
         div.innerHTML = `
-            <div>
-                <strong>🏛️ ${c.nome} (Unidade)</strong><br>
-                <small style="color:#8a8a8a;">Resp: ${c.responsavel} | Cap: ${c.capacidade} alunos</small>
-            </div>
-            <button class="btn btn-vermelho" style="padding:4px 8px; font-size:11px; width:auto; margin-top:0;" onclick="deletarRegistroModulo('${c.id}', 'ct')">Deletar</button>
+            <div><strong>🏛️ ${c.nome}</strong><br><small style="color:#8a8a8a;">Responsável: ${c.responsavel}</small></div>
+            <button class="btn btn-vermelho" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block;" onclick="excluirItem('${c.id}', 'ct')">Excluir</button>
         `;
         container.appendChild(div);
     });
 }
 
-window.deletarRegistroModulo = function(id, tipo) {
-    if (!confirm("🚨 SEGURANÇA: Tem certeza que deseja apagar permanentemente este registro da base de dados?")) return;
+window.excluirItem = function(id, tipo) {
+    if(!confirm("Deseja deletar este registro de forma permanente?")) return;
 
-    if (tipo === 'aluno') {
-        const idx = window.session.alunos.findIndex(a => a.id === String(id));
-        if (idx !== -1) {
-            registrarLogGlobal("Mestre", "Exclusão", `Excluiu permanentemente o registro do aluno ${window.session.alunos[idx].nome} (Plano ${window.session.alunos[idx].plano}).`);
-            window.session.alunos.splice(idx, 1);
+    if(tipo === 'aluno') {
+        const index = session.alunos.findIndex(a => a.id === String(id));
+        if(index !== -1) {
+            registrarLogLocal(`Admin`, "Exclusão", `Removeu o cadastro do atleta ${session.alunos[index].nome}.`);
+            session.alunos.splice(index, 1);
         }
-    } else if (tipo === 'ct') {
-        const idx = window.session.cts.findIndex(c => c.id === String(id));
-        if (idx !== -1) {
-            registrarLogGlobal("Mestre", "Exclusão", `Excluiu a filial ${window.session.cts[idx].nome}.`);
-            window.session.cts.splice(idx, 1);
+    } else if(tipo === 'ct') {
+        const index = session.cts.findIndex(c => c.id === String(id));
+        if(index !== -1) {
+            registrarLogLocal(`Admin`, "Exclusão", `Removeu a filial ${session.cts[index].nome}.`);
+            session.cts.splice(index, 1);
         }
     }
-    renderizarCadastrosSincronizados();
+    renderizarCadastros();
 };
 
-// ========================================================
-// 📊 CENTRAL DE RELATÓRIOS AVANÇADOS COM ENGENHARIA BI
-// ========================================================
-function renderizarRelatoriosAvancados() {
+window.abrirEdicao = function(idAluno) {
+    const aluno = session.alunos.find(a => a.id === String(idAluno));
+    if(!aluno) return;
+
+    document.getElementById('edit-id-oculto').value = aluno.id;
+    document.getElementById('edit-nome').value = aluno.nome;
+    document.getElementById('edit-plano').value = aluno.plano;
+    document.getElementById('edit-modalidade').value = aluno.modalidade;
+    document.getElementById('edit-graduacao').value = aluno.graduacao;
+    document.getElementById('edit-foto-preview').style.backgroundImage = aluno.foto ? `url(${aluno.foto})` : "none";
+    document.getElementById('edit-foto-preview').dataset.fotoBase64 = aluno.foto || "";
+
+    window.navegarPara(10);
+};
+
+window.salvarAlteracoesDedicadas = function() {
+    const id = document.getElementById('edit-id-oculto').value;
+    const aluno = session.alunos.find(a => a.id === String(id));
+
+    if(aluno) {
+        const gradNova = document.getElementById('edit-graduacao').value;
+        if(aluno.graduacao !== gradNova) {
+            registrarLogLocal(`Admin [Mestre]`, "Mudança de Faixa", `O usuário alterou a graduação do aluno ${aluno.nome} de [${aluno.graduacao}] para [${gradNova}].`);
+        }
+        aluno.nome = document.getElementById('edit-nome').value;
+        aluno.plano = document.getElementById('edit-plano').value;
+        aluno.modalidade = document.getElementById('edit-modalidade').value;
+        aluno.graduacao = gradNova;
+        aluno.foto = document.getElementById('edit-foto-preview').getElementById('edit-foto-preview').dataset.fotoBase64 || aluno.foto;
+
+        alert("Cadastro atualizado com sucesso!");
+        window.navegarPara(9);
+    }
+};
+
+window.processarFiltroRelatorio = function() {
+    const cat = document.getElementById('rep-categoria').value;
+    const mod = document.getElementById('rep-modalidade').value;
     const grid = document.getElementById('relatorio-resultado-tela');
     grid.innerHTML = "";
 
-    // Geração Inteligente de Métricas de BI em Tempo Real
-    const totalMatriculados = window.session.alunos.length;
-    const totalPresencasMes = window.session.alunos.reduce((acc, curr) => acc + (curr.frequencia || 0), 0);
-    
-    let htmlBI = `
-        <div style="background:#121212; padding:15px; border-radius:8px; border:1px solid #262626; margin-bottom:15px;">
-            <h3 style="margin-bottom:10px;">📊 Relatório Consolidado de BI Operacional</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center;">
-                <div style="background:#0a0a0a; padding:10px; border-radius:6px; border:1px solid #222;">
-                    <span style="font-size:20px; font-weight:bold; color:#ba0f14;">${totalMatriculados}</span>
-                    <p style="font-size:10px; color:#8a8a8a; text-transform:uppercase;">Alunos Ativos</p>
-                </div>
-                <div style="background:#0a0a0a; padding:10px; border-radius:6px; border:1px solid #222;">
-                    <span style="font-size:20px; font-weight:bold; color:#4ade80;">${totalPresencasMes}</span>
-                    <p style="font-size:10px; color:#8a8a8a; text-transform:uppercase;">Check-ins no Mês</p>
-                </div>
-            </div>
-        </div>
-        <p style="font-size:12px; color:#8a8a8a; margin-bottom:10px; text-transform:uppercase;">Lista Detalhada por Filtro Comercial</p>
-    `;
+    let filtrados = session.alunos;
+    if(cat !== "Todos") filtrados = filtrados.filter(a => a.perfil === cat);
+    if(mod !== "Todas") filtrados = filtrados.filter(a => a.modalidade === mod);
 
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = htmlBI;
-    grid.appendChild(wrapper);
+    // Contadores analíticos em tela
+    document.getElementById('rep-count-alunos').textContent = filtrados.length;
+    let soma=0; filtrados.forEach(f=>soma+=(session.precos[f.perfil]||0));
+    document.getElementById('rep-soma-valores').textContent = `R$ ${soma.toFixed(2)}`;
 
-    window.session.alunos.forEach(a => {
-        const row = document.createElement('div');
-        row.className = "item-registro";
-        row.innerHTML = `
-            <span><strong>${a.nome}</strong><br><small style="color:#8a8a8a;">Matrícula: ${a.dataCadastro} | Vínculo: ${a.perfil}</small></span>
-            <span style="color:#ba0f14; font-weight:bold;">${a.frequencia} aulas</span>
+    if(filtrados.length === 0) {
+        grid.innerHTML = "<p style='color:#8a8a8a; text-align:center; padding:20px;'>Nenhum registro encontrado.</p>";
+        return;
+    }
+
+    filtrados.forEach(a => {
+        const div = document.createElement('div');
+        div.className = "item-registro";
+        div.innerHTML = `
+            <div><strong>${a.nome}</strong><br><small style="color:#8a8a8a;">${a.modalidade} (${a.graduacao})</small></div>
+            <span>Valor Perfil: R$ ${Number(session.precos[a.perfil]).toFixed(2)}</span>
         `;
-        grid.appendChild(row);
+        grid.appendChild(div);
     });
-}
+};
 
 // ========================================================
-// 📱 ÁREA EXCLUSIVA DO ALUNO PREMIUM (CARTEIRINHA E QR)
+// 📱 CENTRAL EXCLUSIVA DA CARTEIRINHA DIGITAL DO ATLETA
 // ========================================================
-function renderizarAreaAlunoPremium() {
-    const a = window.session.currentUser;
-    if (!a) return;
+function renderizarCarteirinhaAluno() {
+    const a = session.currentUser;
+    if(!a) return;
 
     document.getElementById('aluno-perfil-nome').textContent = a.nome;
-    document.getElementById('aluno-tag-perfil').textContent = `[PERFIL: ALUNO ${a.perfil.toUpperCase()}]`;
-    document.getElementById('aluno-tag-graduacao').textContent = `🥋 ${a.modalidade} - Nível: ${a.graduacao}`;
+    document.getElementById('aluno-tag-perfil').textContent = `[ALUNO ${a.perfil.toUpperCase()}]`;
+    document.getElementById('aluno-tag-graduacao').textContent = `${a.modalidade} - ${a.graduacao}`;
     document.getElementById('aluno-contador-freq').textContent = a.frequencia || 0;
 
     const box = document.getElementById('aluno-status-financeiro');
     if (a.statusFinanceiro === "Em dia") {
         box.className = "status-box status-pago";
-        box.innerHTML = `<h3>Acesso Liberado ✔️</h3><p style="font-size:12px; margin-top:4px;">Seu plano contratado (${a.plano}) está regularizado.</p>`;
+        boxchem = `<h3>ACESSO TOTAL LIBERADO ✔️</h3><p>Sua mensalidade de R$ ${Number(session.precos[a.perfil]).toFixed(2)} está quitada.</p>`;
+        box.innerHTML = boxchem;
     } else {
         box.className = "status-box status-atraso";
-        box.innerHTML = `<h3>Pendência Financeira ⚠️</h3><p style="font-size:12px; margin-top:4px;">Acesso bloqueado na catraca. Procure a secretaria da Arena.</p>`;
+        boxchem = `<h3>PENDÊNCIA FINANCEIRA ⚠️</h3><p>Procure a recepção da Arena para liberação da catraca.</p>`;
+        box.innerHTML = boxchem;
     }
 
-    // Injeção de Carteirinha Criptografada em QR Code Real na tela do Atleta
-    document.getElementById('qrcode-
+    if(a.foto) {
+        document.getElementById('aluno-avatar-foto').style.backgroundImage = `url(${a.foto})`;
+        document.getElementById('aluno-avatar-foto').textContent = "";
+    }
+
+    // GERAÇÃO DO QR CODE EXCLUSIVO DA CARTEIRINHA INDUSTRIAL
+    document.getElementById('qrcode-carteirinha').innerHTML = "";
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(document.getElementById('qrcode-carteirinha'), {
+            text: String(a.id),
+            width: 130,
+            height: 130,
+            colorDark: "#000000",
+            colorLight: "#ffffff"
+        });
+    }
+}
+
+// ========================================================
+// ⚙️ TABELA DE CONFIGURAÇÕES DE PREÇOS E AUDITORIA CRONOLÓGICA
+// ========================================================
+function renderizarConfiguracoes() {
+    document.getElementById('conf-preco-comercial').value = session.precos.Comercial;
+    document.getElementById('conf-preco-atleta').value = session.precos.Atleta;
+    document.getElementById('conf-preco-instrutor').value = session.precos.Instrutor;
+
+    const timeline = document.getElementById('timeline-auditoria');
+    timeline.innerHTML = "";
+    session.logs.forEach(l => {
+        timeline.innerHTML += `
+            <div class="timeline-item">
+                <div class="meta">${l.data} | <strong>${l.autor}</strong></div>
+                <div class="acao" style="color:#ba0f14; font-weight:bold; font-size:11px; text-transform:uppercase;">${l.acao}</div>
+                <div class="detalhe" style="color:#ffffff; margin-top:2px;">${l.detalhe}</div>
+            </div>`;
+    });
+}
+
+window.salvarTabelaPrecos = function() {
+    const cAntigo = session.precos.Comercial;
+    const aAntigo = session.precos.Atleta;
+
+    session.precos.Comercial = parseFloat(document.getElementById('conf-preco-comercial').value) || 0;
+    session.precos.Atleta = parseFloat(document.getElementById('conf-preco-atleta').value) || 0;
+    session.precos.Instrutor = parseFloat(document.getElementById('conf-preco-instrutor').value) || 0;
+
+    registrarLogLocal(`Admin [Mestre]`, "Tabela de Preços", `Alterou mensalidades: Comercial de R$${cAntigo} para R$${session.precos.Comercial} | Atleta de R$${aAntigo} para R$${session.precos.Atleta}.`);
+    alert("Tabela de mensalidades por perfil atualizada e recalculada!");
+    renderizarConfiguracoes();
+};
+
+window.firebaseLogoff = function() {
+    session.currentUser = null;
+    window.navegarPara(1);
+};
+
+window.desconectarConta = window.firebaseLogoff;
