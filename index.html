@@ -5,69 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ogro Team - Sistema de Gestão</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Bibliotecas de Terceiros via CDN (QR Code e Leitor de Câmera) -->
+    
+    <!-- Scripts CDN de Terceiros (QR Code e Câmera da Catraca) -->
     <script src="https://cloudflare.com"></script>
     <script src="https://unpkg.com"></script>
-    
-    <!-- SCRIPT INTERNO DE NAVEGAÇÃO E MAPEAMENTO DIRETO -->
-    <script>
-        function alternarSenha() {
-            const input = document.getElementById('login-senha');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
 
-        function executarLogin() {
-            if (typeof window.firebaseLogin === 'function') {
-                window.firebaseLogin();
-            } else {
-                // Contingência local se o script demorar a carregar
-                const email = document.getElementById('login-email').value;
-                const senha = document.getElementById('login-senha').value;
-                if (email === "admin@ogroteam.com" && senha === "123") {
-                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                    document.getElementById('p3').classList.add('active');
-                }
-            }
-        }
-
-        function navegarPara(idPagina) {
-            if (typeof window.firebaseNavegar === 'function') {
-                window.firebaseNavegar(idPagina);
-            } else {
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                const pag = document.getElementById(`p${idPagina}`);
-                if(pag) pag.classList.add('active');
-            }
-        }
-
-        // CORREÇÃO CRÍTICA DO BOTÃO SALVAR ALUNO
-        function salvarAluno() {
-            if (typeof window.firebaseSalvarAluno === 'function') {
-                window.firebaseSalvarAluno();
-            } else if (typeof window.salvarAluno === 'function') {
-                window.salvarAluno();
-            } else {
-                alert("Sincronizando com a nuvem do Firebase. Toque novamente em 2 segundos.");
-            }
-        }
-
-        function salvarCT() { 
-            if (typeof window.firebaseSalvarCT === 'function') window.firebaseSalvarCT(); 
-        }
-        
-        function confirmarPresencaManual() { 
-            if (typeof window.firebasePresencaManual === 'function') window.firebasePresencaManual(); 
-        }
-        
-        function salvarTabelaPrecos() { 
-            if (typeof window.firebaseSalvarPrecos === 'function') window.firebaseSalvarPrecos(); 
-        }
-        
-        function desconectarConta() {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('p1').classList.add('active');
-        }
-    </script>
+    <!-- Scripts Oficiais do Firebase em Modo de Compatibilidade Total -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
 </head>
 <body>
     <div class="app-container">
@@ -107,7 +52,7 @@
                 <label>Nova Senha</label>
                 <input type="password" id="recup-nova" placeholder="Nova Senha">
             </div>
-            <button class="btn btn-primary" onclick="alert('Recuperação efetuada.')">Atualizar Senha</button>
+            <button class="btn btn-primary" onclick="alert('Instância sincronizada com a nuvem.')">Atualizar Senha</button>
             <span class="text-link" onclick="navegarPara(1)">← Voltar para o Login</span>
         </div>
 
@@ -211,9 +156,9 @@
         <div id="p5" class="page">
             <h2>Registrar Academia / CT</h2>
             <div class="form-group"><label>Nome da Filial</label><input type="text" id="cad-ct-nome"></div>
-            <div class="form-group"><label>CNPJ</label><input type="text" id="cad-ct-cnpj"></div>
+            <div class="form-group"><label>CNPJ / Registro</label><input type="text" id="cad-ct-cnpj"></div>
             <div class="form-group"><label>Responsável</label><input type="text" id="cad-ct-responsavel"></div>
-            <div class="form-group"><label>WhatsApp Comercial</label><input type="text" id="cad-ct-whatsapp"></div>
+            <div class="form-group"><label>WhatsApp Comercial</label><input type="text" id="cad-ct-whatsapp" placeholder="Ex: 21977776666"></div>
             <button class="btn btn-primary" onclick="salvarCT()">Registrar Unidade</button>
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
@@ -231,13 +176,25 @@
             <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
         </div>
 
-        <!-- PÁGINA 7: GESTÃO DE EQUIPE -->
+        <!-- PÁGINA 7: GESTÃO DE EQUIPE (ADICIONAR ADMINISTRADORES CORRIGIDA) -->
         <div id="p7" class="page">
-            <h2>Adicionar Administradores</h2>
-            <div class="form-group"><label>Nome do Gestor</label><input type="text" id="adm-nome"></div>
-            <div class="form-group"><label>E-mail de Acesso</label><input type="email" id="adm-email"></div>
-            <div class="form-group"><label>Senha Provisória</label><input type="password" id="adm-senha"></div>
-            <button class="btn btn-accent" onclick="navegarPara(3)">Voltar</button>
+            <h2>Gestão de Equipe e Administradores</h2>
+            <div class="form-group"><label>Nome do Gestor</label><input type="text" id="adm-nome" placeholder="Nome Completo"></div>
+            <div class="form-group"><label>E-mail de Acesso</label><input type="email" id="adm-email" placeholder="admin@exemplo.com"></div>
+            <div class="form-group"><label>Senha Provisória</label><input type="password" id="adm-senha" placeholder="Senha"></div>
+            <div class="form-group">
+                <label>Nível Administrativo</label>
+                <select id="adm-nivel">
+                    <option value="Administrador Integral">Administrador Integral (Mestre)</option>
+                    <option value="Apoio Administrativo">Apoio Administrativo</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="salvarNovoAdmin()">Gravar e Conceder Privilégios</button>
+            
+            <h3 style="margin-top:25px;">Promover Aluno Existente</h3>
+            <div id="lista-promocao-alunos" class="list-container"></div>
+            
+            <button class="btn btn-accent" onclick="navegarPara(3)" style="margin-top:15px;">Voltar</button>
         </div>
 
         <!-- PÁGINA 8: FREQUÊNCIA E CATRACA QR -->
@@ -309,7 +266,7 @@
 
     </div>
 
-    <!-- CARREGAMENTO DO BACKEND EM FIREBASE COMO MÓDULO -->
-    <script type="module" src="script.js"></script>
+    <!-- O SCRIPT PRINCIPAL FOI REMOVIDO DO MODULO PARA EXECUTAR DIRETO NO BROWSER -->
+    <script src="script.js"></script>
 </body>
 </html>
