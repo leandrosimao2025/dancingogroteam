@@ -9,29 +9,24 @@
     <script src="https://cloudflare.com"></script>
     <script src="https://unpkg.com"></script>
     
-    <!-- SCRIPT INTERNO DE SEGURANÇA E NAVEGAÇÃO INTERNA -->
+    <!-- SCRIPT INTERNO DE NAVEGAÇÃO E MAPEAMENTO DIRETO -->
     <script>
         function alternarSenha() {
             const input = document.getElementById('login-senha');
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        // Sistema Inteligente de Login com Contingência Local Integrada
         function executarLogin() {
-            const email = document.getElementById('login-email').value;
-            const senha = document.getElementById('login-senha').value;
-
-            // Se o Firebase falhar ou demorar para baixar o script.js, a trava local libera o Mestre Ogro na hora!
-            if (email === "admin@ogroteam.com" && senha === "123") {
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                document.getElementById('p3').classList.add('active'); // Abre o Painel Central direto
-                return;
-            }
-
             if (typeof window.firebaseLogin === 'function') {
                 window.firebaseLogin();
             } else {
-                alert("Sincronizando com o banco. Se for o Administrador, use admin@ogroteam.com e 123 para destravar.");
+                // Contingência local se o script demorar a carregar
+                const email = document.getElementById('login-email').value;
+                const senha = document.getElementById('login-senha').value;
+                if (email === "admin@ogroteam.com" && senha === "123") {
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    document.getElementById('p3').classList.add('active');
+                }
             }
         }
 
@@ -39,24 +34,35 @@
             if (typeof window.firebaseNavegar === 'function') {
                 window.firebaseNavegar(idPagina);
             } else {
-                // Navegação direta de contingência caso os módulos externos atrasem
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 const pag = document.getElementById(`p${idPagina}`);
                 if(pag) pag.classList.add('active');
             }
         }
 
+        // CORREÇÃO CRÍTICA DO BOTÃO SALVAR ALUNO
         function salvarAluno() {
             if (typeof window.firebaseSalvarAluno === 'function') {
                 window.firebaseSalvarAluno();
+            } else if (typeof window.salvarAluno === 'function') {
+                window.salvarAluno();
             } else {
-                alert("Funcionalidade aguardando retorno do banco.");
+                alert("Sincronizando com a nuvem do Firebase. Toque novamente em 2 segundos.");
             }
         }
 
-        function salvarCT() { if (typeof window.firebaseSalvarCT === 'function') window.firebaseSalvarCT(); }
-        function confirmarPresencaManual() { if (typeof window.firebasePresencaManual === 'function') window.firebasePresencaManual(); }
-        function salvarTabelaPrecos() { if (typeof window.firebaseSalvarPrecos === 'function') window.firebaseSalvarPrecos(); }
+        function salvarCT() { 
+            if (typeof window.firebaseSalvarCT === 'function') window.firebaseSalvarCT(); 
+        }
+        
+        function confirmarPresencaManual() { 
+            if (typeof window.firebasePresencaManual === 'function') window.firebasePresencaManual(); 
+        }
+        
+        function salvarTabelaPrecos() { 
+            if (typeof window.firebaseSalvarPrecos === 'function') window.firebaseSalvarPrecos(); 
+        }
+        
         function desconectarConta() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('p1').classList.add('active');
