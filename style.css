@@ -9,7 +9,7 @@
 }
 
 body {
-    background-color: #020202; /* Fundo escuro imersivo */
+    background-color: #020202;
     color: #ffffff;
     display: flex;
     justify-content: center;
@@ -18,21 +18,19 @@ body {
     padding: 10px;
 }
 
-/* Container que simula um Smartphone Robusto / Octógono */
 .app-container {
     width: 100%;
     max-width: 480px;
-    background-color: #0a0a0a; /* Preto puro arena */
+    background-color: #0a0a0a;
     min-height: 95vh;
     border-radius: 14px;
-    border: 2px solid #ba0f14; /* Borda vermelha oficial da marca */
+    border: 2px solid #ba0f14;
     box-shadow: 0 0 30px rgba(186, 15, 20, 0.35);
     overflow: hidden;
     position: relative;
-    padding-bottom: 80px; /* Margem extra de segurança para o rodapé */
+    padding-bottom: 80px;
 }
 
-/* Sistema Dinâmico de Transição de Páginas */
 .page {
     display: none;
     padding: 20px;
@@ -104,7 +102,7 @@ p.subtitle {
 }
 
 /* ==========================================
-   FORMULÁRIOS PROFISSIONAIS BRUTAIS
+   FORMULÁRIOS PROFISSIONAIS
    ========================================== */
 .form-group {
     margin-bottom: 16px;
@@ -127,8 +125,8 @@ input[type="number"],
 select {
     width: 100%;
     padding: 14px;
-    background-color: #121212; /* Grafite escuro fosco */
-    border: 1px solid #262626; /* Cinza metálico */
+    background-color: #121212;
+    border: 1px solid #262626;
     border-radius: 6px;
     color: #ffffff;
     font-size: 15px;
@@ -137,9 +135,14 @@ select {
 }
 
 input:focus, select:focus {
-    border-color: #ba0f14; /* Aceleração de foco no vermelho sangue */
+    border-color: #ba0f14;
     box-shadow: 0 0 12px rgba(186, 15, 20, 0.45);
     background-color: #161616;
+}
+
+select option {
+    background-color: #121212;
+    color: #ffffff;
 }
 
 .password-wrapper {
@@ -158,7 +161,7 @@ input:focus, select:focus {
 }
 
 /* ==========================================
-   MÓDULO REATIVO DE COMPILAÇÃO DE FOTOS
+   UPLOAD DE FOTOS
    ========================================== */
 .photo-upload-container {
     display: flex;
@@ -199,10 +202,11 @@ input:focus, select:focus {
     background-size: cover;
     background-position: center;
     border: 1px solid #ba0f14;
+    flex-shrink: 0;
 }
 
 /* ==========================================
-   BOTÕES DE AÇÃO TOTALMENTE RESPONSIVOS
+   BOTÕES
    ========================================== */
 .btn {
     width: 100%;
@@ -224,7 +228,7 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-    background-color: #ba0f14; /* Vermelho Oficial */
+    background-color: #ba0f14;
     color: #ffffff;
 }
 
@@ -266,11 +270,11 @@ input:focus, select:focus {
 }
 
 /* ==========================================
-   PÁGINA 3: GRID DE CARDS PREMIUM
+   GRID DE CARDS DO PAINEL
    ========================================== */
 .grid-menu {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 Colunas Fixas para Celular */
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     margin-top: 15px;
 }
@@ -288,7 +292,7 @@ input:focus, select:focus {
     min-height: 110px;
 }
 
-.card-premium:hover {
+.card-premium:hover, .card-premium:active {
     border-color: #ba0f14;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(186, 15, 20, 0.2);
@@ -314,7 +318,7 @@ input:focus, select:focus {
 }
 
 /* ==========================================
-   PÁGINA 6: DASHBOARD FINANCEIRO E GRÁFICOS
+   DASHBOARD FINANCEIRO E GRÁFICOS
    ========================================== */
 .metrics-top-panel {
     display: grid;
@@ -347,7 +351,6 @@ input:focus, select:focus {
 .text-success { color: #4ade80; }
 .text-danger { color: #ef4444; }
 
-/* Sistema Industrial de Barras Gráficas Reativas */
 .grafico-wrapper {
     background-color: #121212;
     padding: 16px;
@@ -356,19 +359,31 @@ input:focus, select:focus {
     margin-bottom: 20px;
 }
 
+/* ✅ ADICIONADO: estilo para linha do gráfico que estava sem CSS */
+.modalidade-chart-item {
+    margin-bottom: 6px;
+}
+
+.chart-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #8a8a8a;
+    margin-bottom: 4px;
+}
+
 .barra-container {
     width: 100%;
     height: 12px;
     background-color: #262626;
     border-radius: 10px;
     overflow: hidden;
-    margin-top: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .barra-interna {
     height: 100%;
-    width: 0%; /* Cresce dinamicamente via JS */
+    width: 0%;
     transition: width 0.6s ease-in-out;
 }
 
@@ -392,6 +407,7 @@ input:focus, select:focus {
     padding: 12px;
     border-bottom: 1px solid #1c1c1c;
     font-size: 13px;
+    gap: 8px;
 }
 
 .item-registro:last-child {
@@ -405,6 +421,7 @@ input:focus, select:focus {
     font-weight: 700;
     border-radius: 4px;
     text-transform: uppercase;
+    color: #ffffff;
 }
 
 .tag-aluno-header {
@@ -425,6 +442,7 @@ input:focus, select:focus {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 10px;
 }
 
 .status-pago {
@@ -440,7 +458,7 @@ input:focus, select:focus {
 }
 
 /* ==========================================
-   PÁGINA 13: TIMELINE DE AUDITORIA DIGITAL
+   TIMELINE DE AUDITORIA
    ========================================== */
 .timeline {
     border-left: 2px solid #ba0f14;
@@ -474,10 +492,10 @@ input:focus, select:focus {
 }
 
 /* ==========================================
-   RODAPÉ FIXO DE SEGURANÇA GLOBAL
+   RODAPÉ FIXO
    ========================================== */
 .footer-fixo {
-    display: none; /* Inicia oculto por motivos rígidos de segurança */
+    display: none;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -491,7 +509,7 @@ input:focus, select:focus {
 }
 
 .footer-fixo.show-footer {
-    display: flex; /* Exibido apenas para administradores validados */
+    display: flex;
 }
 
 .footer-fixo .btn-footer {
@@ -507,4 +525,52 @@ input:focus, select:focus {
 
 .footer-fixo .btn-footer:hover {
     color: #ba0f14;
+}
+
+/* ==========================================
+   ✅ MODAL DE CREDENCIAIS (NOVO)
+   ========================================== */
+#modal-credenciais {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.88);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Leitor QR — sobrescreve estilos padrão da lib para combinar com o tema */
+#reader video {
+    border-radius: 6px;
+}
+
+#reader__scan_region {
+    background: #0a0a0a !important;
+}
+
+#reader__dashboard {
+    background: #121212 !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+}
+
+#reader__dashboard button {
+    background: #ba0f14 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 8px 14px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+}
+
+#reader__dashboard select {
+    background: #1c1c1c !important;
+    color: #ffffff !important;
+    border: 1px solid #262626 !important;
 }
